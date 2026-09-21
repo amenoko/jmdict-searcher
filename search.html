@@ -182,6 +182,7 @@
                     inflateme = new Uint8Array(result);
                     inflated = pako.ungzip(inflateme,{ 'to': 'string' });
                     xmlDoc = new window.DOMParser().parseFromString(inflated, "text/xml");
+                    document.getElementById("search_field").focus();
                     status_update("Ready");
 
                 } catch (error) {
@@ -387,7 +388,8 @@
 
             window.addEventListener("load", (event) => {
                 //status_update("Ready");
-                document.getElementById("search_field").focus();
+                //document.getElementById("search_field").focus();
+                console.log("window.addEventListener(\"load\"... : doing nothing");
             });
 
             async function searchexec() {
@@ -404,6 +406,7 @@
                 search_array= search_field_contents.trim().split(/\s+/);
                 document.getElementById("results_container").innerHTML = "";
                 await status_update("Searching...");
+                document.getElementById("search_field").blur();
                 for (let x=0;x<search_array.length;x++) {
                     console.log("Calling searchXML(\"" + search_array[x] + "\")");
                     if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
@@ -415,6 +418,7 @@
                     }
                 }
                 await status_update("Idle");
+                document.getElementById("search_field").focus();
                 console.log("searchexec() end");
             }
         </script>
