@@ -206,6 +206,10 @@
                 new_iframe.setAttribute("class","results_container_column");
                 results_container.appendChild(new_iframe);
                 results_container_column = new_iframe.contentWindow.document;
+				// inject parent css
+                document.querySelectorAll('style').forEach(style => {
+                results_container_column.head.appendChild(style.cloneNode(true));
+                });
 
 
 
@@ -234,10 +238,7 @@
                     if (found == true) {
                         results_counter++;
                         //await results_counter_update(results_counter);
-                        // inject parent css
-                        document.querySelectorAll('style').forEach(style => {
-                            results_container_column.head.appendChild(style.cloneNode(true));
-                        });
+                        
 
                         row_container = results_container_column.createElement("div");
                         row_container.setAttribute("class","row_container");
