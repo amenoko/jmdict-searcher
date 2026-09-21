@@ -281,7 +281,12 @@
                                             k_ele_container.appendChild(line_break);
                                         }*/
                                     } else {
-                                        new_html_element.setAttribute("class","k_ele_other");
+										if (new_html_element.textContent.match(/^news[0-9]*|^ichi[0-9]|^spec[0-9]|^gai[0-9]|^nf[0-9]*/)) {
+                                            // is frequency tag
+                                            new_html_element.setAttribute("class", "k_ele_freq");
+                                        } else {
+                                            new_html_element.setAttribute("class","k_ele_other");
+                                        }
                                     }
                                     //console.log("appending \"" + new_html_element.textContent + "\" to k_ele_container");
 
