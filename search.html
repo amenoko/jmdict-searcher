@@ -140,8 +140,15 @@
         </style>
         <script src="pako.min.js"></script>
         <script language="JavaScript" type="text/javascript">
+            async function status_update(text) {
+                document.getElementById("status").innerHTML = text;
+                return new Promise(resolve => setTimeout(resolve, 0));
+
+            }
+            
             let xmlDoc = null;
             async function init() {
+                status_update("Loading JMdict");
                /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
                 try {
                     const response = await fetch("JMdict.xml.gz");
@@ -154,19 +161,19 @@
                     inflateme = new Uint8Array(result);
                     inflated = pako.ungzip(inflateme,{ 'to': 'string' });
                     xmlDoc = new window.DOMParser().parseFromString(inflated, "text/xml");
+                    status_update("Ready");
 
                 } catch (error) {
                     console.error(error.message);
+                    status_update("Failed to load XML");
                 }
             }
 
+            
+
+            
+            
             init();
-
-            async function status_update(text) {
-                document.getElementById("status").innerHTML = text;
-                return new Promise(resolve => setTimeout(resolve, 0));
-
-            }
             async function results_counter_update(counter) {
                 document.getElementById("results_count").innerHTML = counter;
                 return new Promise(resolve => setTimeout(resolve, 0));
@@ -380,7 +387,8 @@
     <body>
     <div id="search_bar">
         <input type="text" name="literal" id="search_field">
-        <input type="submit" value="Go" onClick="searchexec()" id="search_button"><div id="status"></div>
+        <input type="submit" value="Go" onClick="searchexec()" id="search_button">
+        <div id="status">Please wait...</div>
         <div id="results_count"></div>
     </div>
     <script>
