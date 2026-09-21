@@ -418,7 +418,7 @@
                     }
                 }
                 await status_update("Idle");
-                document.getElementById("search_field").focus();
+                //document.getElementById("search_field").focus(); annoying on mobile, as it turns out
                 console.log("searchexec() end");
             }
         </script>
@@ -462,7 +462,7 @@
         </ul>
         <br>This page uses <a href="https://nodeca.github.io/pako/">pako</a> for gzip decompression
 		<br><a href="https://github.com/amenoko/jmdict-searcher/tree/main">View this project on GitHub</a>
-        <br>New feature ideas: ordering by commonness, regex search, basic kanjidic2 integration</div>
+        <br>New feature ideas: ordering by commonness, regex search, basic kanjidic2 integration, better mobile auto-hide / search field focusing/defocusing</div>
     </div>        
         
     </body>
