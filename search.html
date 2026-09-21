@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <style>
+            :root {
+                --accent: #5290ac;
+                --bg1: #1c1c22;
+                --bg2: #202026;
+                --bg3: #26262d;
+                --fg1: #dddddf;
+                --fg2: #88888c;
+                --fg3: #66666c;
+                --gradient: linear-gradient(90deg, rgba(28,28,31,1) 0%, rgba(68,68,73,1) 50%, rgba(28,28,31,1) 100%);
+            }
+
+            body {
+                color: var(--fg1);
+                background-color: var(--bg1);
+                font-family: BR Wakaisho;
+                font-size: 16px;
+                display:flex;
+                flex-direction:column;
+                height: 100vh;
+                margin:0px;
+            }
+
+
+            .meanings_readings {
+                width: 200px;
+                font-size:20px;
+                margin: 5px 10px 5px 0px;
+                padding:0px;
+                min-width: 200px;
+            }
+            /* rebs by default are grey but if there's
+            no kebs that's ugly */
+            .keb, .reb_white {
+                color:var(--fg1);
+            }
+            .reb {
+                color:var(--fg2);
+                font-size: 14px;
+            }
+            .k_ele_other {
+                color:var(--fg2);
+                font-size:10px;
+            }
+            .keb, .k_ele_other {margin-right:5px;display:inline;}
+            .k_ele_other:last-child {margin-right:0px;}
+
+
+
+            #results_container {
+                display:flex;
+                flex-direction:column;
+                flex-grow:1;
+                margin: 0px 5px 5px 5px;
+
+            }
+            .results_container_column {
+                border:solid 1px;
+                border-color: var(--accent);
+                border-radius:5px;
+                margin-top: 6px;
+                flex-grow:1;
+
+            }
+
+            .senses_extras {
+                color: var(--fg2);
+                font-size: 13px;
+            }
+
+            .row_container {
+                display:flex;
+                margin: 0px 5px 0px 5px;
+                padding: 0px 0px 0px 0px;
+                border-bottom-style: solid;
+                border-width:1px;
+                border-color: var(--fg3);
+            }
+            .row_container:last-child() {
+                margin-bottom: 70px;
+            }
+
+            .senses_block_container {
+                margin:5px 0px 5px 0px;
+                padding:0px;
+            }
+            .senses_container {
+                display:flex;
+                flex-direction:column;
+                /*flex-wrap:wrap;*/
+            }
+
+            input  {
+                background-color: var(--bg1);
+                color: var(--fg1);
+                border: solid 1px;
+                padding:0px;
+                border-color: var(--accent);
+                border-radius:5px;
+                height:30px;
+                font-family: BR Wakaisho;
+                font-size:18px;
+            }
+            input:hover {
+                background-color: var(--bg3);
+            }
+            #status {
+                font-size: 16px;
+            }
+
+            #search_field {
+                width: 300px;
+            }
+
+            #search_button {
+                width:50px;
+            }
+            #search_field, #search_button, #status {
+                margin-right:10px;
+            }
+
+            #search_bar {
+                display:flex;
+                flex-direction:row;
+                align-items:center;
+                margin: 5px 0px 0px 5px;
+            }
+            #results_count {
+                text-align:right;
+                flex-grow:1;
+                margin-right:5px;
+            }
+            input {
+                padding: 0px 5px 0px 5px;
+            }
+        </style>
+        <script src="pako.min.js"></script>
+        <script language="JavaScript" type="text/javascript">
+            let xmlDoc = null;
+            async function init() {
+               /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
+                try {
+                    const response = await fetch("JMdict.xml.gz");
+                    if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                    }
+
+                    const result = await response.arrayBuffer();
+                    console.log(result);
+                    inflateme = new Uint8Array(result);
+                    inflated = pako.ungzip(inflateme,{ 'to': 'string' });
+                    xmlDoc = new window.DOMParser().parseFromString(inflated, "text/xml");
+
+                } catch (error) {
+                    console.error(error.message);
+                }
+            }
+
+            init();
+
+            async function status_update(text) {
+                document.getElementById("status").innerHTML = text;
+                return new Promise(resolve => setTimeout(resolve, 0));
+
+            }
+            async function results_counter_update(counter) {
+                document.getElementById("results_count").innerHTML = counter;
+                return new Promise(resolve => setTimeout(resolve, 0));
+            }
+            display_counter=true; //for checking whether result lists are affected by async??
+                                   //we'll still increment results_counter++ so that it can be
+                                   //queried in the dev console
+
+            async function searchXML(search_word) {
+                results_container = document.getElementById("results_container");
+
+                if (search_word === null || search_word.match(/^ *$/) !== null) {
+                    console.log("empty, quitting");
+                    return;
+                }
+                found=false;
+                entries=xmlDoc.getElementsByTagName("entry");
+                new_iframe = document.createElement("iframe");
+                new_iframe.setAttribute("class","results_container_column");
+                results_container.appendChild(new_iframe);
+                results_container_column = new_iframe.contentWindow.document;
+
+
+
+                for (let i=0;i < entries.length;i++) {
+                    found=false;
+                    kebs=entries[i].getElementsByTagName("keb");
+                    for (let element of kebs) {
+                        /*new_html_element = document.createElement("div");
+                        new_html_element.textContent = element.textContent;
+                        container.appendChild(new_html_element);*/
+                        if(element.textContent.includes(search_word)) {
+                            console.log("found keb: " + element.textContent);
+                            found=true;
+                            break;
+                        }
+                    }
+                    rebs=entries[i].getElementsByTagName("reb");
+                    for (let element of rebs) {
+                        if(element.textContent.includes(search_word)) {
+                            console.log("found reb: " + element.textContent);
+                            found=true;
+                            break;
+                        }
+                    }
+
+                    if (found == true) {
+                        results_counter++;
+                        //await results_counter_update(results_counter);
+                        // inject parent css
+                        document.querySelectorAll('style').forEach(style => {
+                            results_container_column.head.appendChild(style.cloneNode(true));
+                        });
+
+                        row_container = results_container_column.createElement("div");
+                        row_container.setAttribute("class","row_container");
+
+
+                        meanings_readings = results_container_column.createElement("div");
+                        meanings_readings.setAttribute("class","meanings_readings");
+                        k_ele=entries[i].getElementsByTagName("k_ele");
+
+                        // build kanji/writing list (kebs)
+                        // we use extra container so we can add it in after building rebs list
+                        // rebs list needs has_kebs value first
+                        k_ele_container = results_container_column.createElement("div");
+                        k_ele_container.setAttribute("class","k_ele_container");
+                        has_kebs=false;
+                        for (let m=0;m < k_ele.length;m++) {
+                            // check if ke_inf exists and contains search-only desc so we can skip outright
+                            skip=false;
+                            for (let k=0;k < k_ele[m].childElementCount;k++) {
+                                if(k_ele[m].children[k].textContent == "search-only kanji form") {skip=true;};
+                            }
+                            if (skip == false) {
+                                for (let k=0;k < k_ele[m].childElementCount;k++) {
+                                    new_html_element = results_container_column.createElement("div");
+                                    new_html_element.textContent = k_ele[m].children[k].textContent;
+
+                                    //choose class depending on what type of element this is
+                                    console.log("k = " + k);
+                                    if(k_ele[m].children[k].tagName == "keb") {
+                                        new_html_element.setAttribute("class","keb");
+                                        if (m > 0) {
+                                            console.log("m > 0 -> inserting br element");
+                                            line_break = results_container_column.createElement("br");
+                                            k_ele_container.appendChild(line_break);
+                                        }
+                                    } else {
+                                        new_html_element.setAttribute("class","k_ele_other");
+                                    }
+                                    //console.log("appending \"" + new_html_element.textContent + "\" to k_ele_container");
+
+
+                                    k_ele_container.appendChild(new_html_element);
+                                    //console.log("k_ele_container.childElementCount: " + k_ele_container.childElementCount);
+                                    has_kebs=true;
+                                }
+                            }
+                        }
+
+                        //build readings list
+                        for (let element of rebs) {
+                            new_html_element = results_container_column.createElement("div");
+                            if (has_kebs) {new_html_element.setAttribute("class","reb");}
+                                else {new_html_element.setAttribute("class","reb_white");}
+                            new_html_element.textContent = element.textContent;
+                            //console.log("appending \"" + new_html_element.textContent + "\" to meanings_readings");
+                            meanings_readings.appendChild(new_html_element);
+                        }
+                        meanings_readings.appendChild(k_ele_container);
+                        row_container.appendChild(meanings_readings);
+
+                        senses_container = results_container_column.createElement("div");
+                        senses_container.setAttribute("class","senses_container");
+                        senses=entries[i].getElementsByTagName("sense");
+                        for (let h=0;h < senses.length;h++) {
+                            senses_block=senses[h].children;
+                            senses_block_container = results_container_column.createElement("div");
+                            senses_block_container.setAttribute("class","senses_block_container");
+                            senses_glosses = "";
+                            senses_extras = "";
+                            extras = results_container_column.createDocumentFragment();
+                            for (j=0;j < senses_block.length;j++) {
+                                senses_bit=senses_block[j];
+
+                                if (senses_bit.textContent != "" && senses_bit.textContent != null) {
+                                    //glosses = document.createDocumentFragment();
+                                    if (senses_bit.getAttribute("xml:lang") == "ger" || senses_bit.getAttribute("xml:lang") == "eng" || senses_bit.getAttribute("xml:lang") == null || senses_bit.getAttribute("xml:lang") == "")  {
+
+                                        //senses_container.appendChild(new_html_element);
+                                        if (senses_bit.textContent.match(/^ *$/) == null && senses_bit.textContent != null) {
+                                            if (senses_bit.tagName == "gloss") {
+                                                senses_glosses = senses_glosses + senses_bit.textContent + "; ";
+                                            } else if (senses_bit.tagName == "stagk") {
+                                                senses_extras = senses_extras + "only " + senses_bit.textContent + "; ";
+                                            } else{
+                                                senses_extras = senses_extras + senses_bit.textContent + "; ";
+                                            }
+                                        }
+                                    }
+
+
+                                }
+
+                            }
+
+                            if (senses_glosses != "") {
+                                senses_glosses_element = results_container_column.createElement("div");
+                                senses_glosses_element.setAttribute("class", "senses_glosses");
+                                senses_glosses = senses_glosses.slice(0,-2);
+                                senses_glosses_element.textContent = senses_glosses;
+                                senses_block_container.appendChild(senses_glosses_element);
+                            }
+                            if (senses_extras != ""); {
+                                senses_extras_element = results_container_column.createElement("div");
+                                senses_extras_element.setAttribute("class", "senses_extras");
+                                senses_extras = senses_extras.slice(0,-2);
+                                senses_extras_element.textContent = senses_extras;
+                                senses_block_container.appendChild(senses_extras_element);
+                            }
+
+                            if (senses_glosses != "" && senses_extras != "") {
+                                senses_container.appendChild(senses_block_container);
+                            }
+                            row_container.appendChild(senses_container);
+                        }
+                        results_container_column.body.appendChild(row_container);
+                        if (display_counter) {await results_counter_update(results_counter);}
+                    }
+                }
+
+                results_container_column.body.setAttribute("class","results_container_column_inside");
+                return new Promise(resolve => setTimeout(resolve, 10));
+            }
+
+            window.addEventListener("load", (event) => {
+                status_update("Ready");
+                document.getElementById("search_field").focus();
+            });
+
+            async function searchexec() {
+                search_field_contents = document.getElementById("search_field").value;
+                console.log("search_field_contents = " + search_field_contents);
+                if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
+                    console.log("Empty, quitting");
+                    //await status_update("Empty search");
+                    return;
+                }
+
+                results_counter=0;
+                if (display_counter) {await results_counter_update(results_counter);}
+                search_array= search_field_contents.trim().split(/\s+/);
+                document.getElementById("results_container").innerHTML = "";
+                await status_update("Searching...");
+                for (let x=0;x<search_array.length;x++) {
+                    console.log("Calling searchXML(\"" + search_array[x] + "\")");
+                    if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
+                        /* setTimeout(function() {
+                            searchXML(search_array[x]);
+                        }, 100); */
+                        await searchXML(search_array[x]);
+                        if (display_counter) {await results_counter_update(results_counter);}
+                    }
+                }
+                await status_update("Idle");
+                console.log("searchexec() end");
+            }
+        </script>
+    </head>
+    <body>
+    <div id="search_bar">
+        <input type="text" name="literal" id="search_field">
+        <input type="submit" value="Go" onClick="searchexec()" id="search_button"><div id="status"></div>
+        <div id="results_count"></div>
+    </div>
+    <script>
+        var input_search = document.getElementById("search_field");
+        input_search.addEventListener("keypress", function(event) {
+            // If the user presses the "Enter" key on the keyboard
+            if (event.key === "Enter") {
+                searchexec();
+            }
+        });
+    </script>
+    <div id="results_container"><div style="color:var(--fg2);padding:5px;position:absolute;bottom:0px;max-width:600px;margin:10px;">- news1/2: appears in the "wordfreq" file compiled by Alexandre Girardi
+        from the Mainichi Shimbun. (See the Monash ftp archive for a copy.)
+        Words in the first 12,000 in that file are marked "news1" and words
+        in the second 12,000 are marked "news2".
+        <br>- ichi1/2: appears in the "Ichimango goi bunruishuu", Senmon Kyouiku
+        Publishing, Tokyo, 1998.  (The entries marked "ichi2" were
+        demoted from ichi1 because they were observed to have low
+        frequencies in the WWW and newspapers.)
+        <br>- spec1 and spec2: a small number of words use this marker when they
+        are detected as being common, but are not included in other lists.
+        <br>- gai1/2: common loanwords, based on the wordfreq file.
+        <br>- nfxx: this is an indicator of frequency-of-use ranking in the
+        wordfreq file. "xx" is the number of the set of 500 words in which
+        the entry can be found, with "01" assigned to the first 500, "02"
+        to the second, and so on. (The entries with news1, ichi1, spec1, spec2
+        and gai1 values are marked with a "(P)" in the EDICT and EDICT2
+        files.)<br><br>new feature ideas: ordering by commonness, regex search</div></div>
+    </body>
+</html>
