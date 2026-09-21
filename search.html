@@ -36,7 +36,7 @@
 
 
             .meanings_readings {
-                width: 200px;
+                width: 25%;
                 font-size:20px;
                 margin: 5px 10px 5px 0px;
                 padding:0px;
@@ -146,6 +146,9 @@
             input {
                 padding: 0px 5px 0px 5px;
             }
+			 @media (max-width: 800px) {
+    		    .k_ele_other {display:block;}
+     		 }
         </style>
         <script src="pako.min.js"></script>
         <script language="JavaScript" type="text/javascript">
@@ -266,11 +269,10 @@
                                     console.log("k = " + k);
                                     if(k_ele[m].children[k].tagName == "keb") {
                                         new_html_element.setAttribute("class","keb");
-                                        if (m > 0) {
-                                            console.log("m > 0 -> inserting br element");
+                                        /*if (m > 0) {
                                             line_break = results_container_column.createElement("br");
                                             k_ele_container.appendChild(line_break);
-                                        }
+                                        }*/
                                     } else {
                                         new_html_element.setAttribute("class","k_ele_other");
                                     }
