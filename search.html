@@ -37,6 +37,7 @@
 
             .meanings_readings {
                 width: 25%;
+				min-width: 25%;
                 font-size:20px;
                 margin: 5px 10px 5px 0px;
                 padding:0px;
@@ -145,8 +146,10 @@
             input {
                 padding: 0px 5px 0px 5px;
             }
+			/* minor adjustments for small viewports/phones */
 			@media (max-width: 800px) {
     		    .k_ele_other, .keb {display:block;}
+				zoom:90%;
      	   }
         </style>
         <script src="pako.min.js"></script>
