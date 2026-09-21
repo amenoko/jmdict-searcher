@@ -35,7 +35,10 @@
             a, a:visited {color:var(--accent);text-decoration:none;}
             a:hover {text-decoration:underline;}
 
-
+            .no_results {
+                color:var(--fg2);
+                margin:5px;
+            }
             .meanings_readings {
                 width: 25%;
 				min-width: 25%;
@@ -60,6 +63,7 @@
             .k_ele_other:last-child, .k_ele_freq:last-child {margin-right:0px;}
 			.k_ele_freq {
 				color:var(--accent);
+				font-weight: bold;
 			}
 
 
@@ -150,7 +154,7 @@
                 padding: 0px 5px 0px 5px;
             }
 			/* minor adjustments for small viewports/phones */
-			@media (max-width: 700px) {
+			@media (max-width: 800px) {
     		    .k_ele_other, .keb {display:block;}
 				zoom:90%;
      	   }
@@ -366,11 +370,18 @@
                             row_container.appendChild(senses_container);
                         }
                         results_container_column.body.appendChild(row_container);
+
                         if (display_counter) {await results_counter_update(results_counter);}
                     }
+
                 }
 
                 results_container_column.body.setAttribute("class","results_container_column_inside");
+                console.log("results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
+                if(results_container_column.body.childElementCount == 0) {
+                    results_container_column.body.setAttribute("class", "no_results");
+                    results_container_column.body.textContent = "No results for \"" + search_word + "\"";
+                }
                 return new Promise(resolve => setTimeout(resolve, 10));
             }
 
