@@ -52,7 +52,7 @@
                 color:var(--fg2);
                 font-size: 14px;
             }
-            .k_ele_other {
+            .k_ele_freq, .k_ele_other {
                 color:var(--fg2);
                 font-size:10px;
             }
@@ -270,18 +270,18 @@
                             if (skip == false) {
                                 for (let k=0;k < k_ele[m].childElementCount;k++) {
                                     new_html_element = results_container_column.createElement("div");
-                                    new_html_element.textContent = k_ele[m].children[k].textContent;
+                                    
 
                                     //choose class depending on what type of element this is
                                     console.log("k = " + k);
                                     if(k_ele[m].children[k].tagName == "keb") {
                                         new_html_element.setAttribute("class","keb");
-                                        /*if (m > 0) {
+                                        if (m > 0) {
                                             line_break = results_container_column.createElement("br");
                                             k_ele_container.appendChild(line_break);
-                                        }*/
+                                        }
                                     } else {
-										if (new_html_element.textContent.match(/^news[0-9]*|^ichi[0-9]|^spec[0-9]|^gai[0-9]|^nf[0-9]*/)) {
+										if (k_ele[m].children[k].textContent.match(/^news[0-9]*|^ichi[0-9]|^spec[0-9]|^gai[0-9]|^nf[0-9]*/)) {
                                             // is frequency tag
                                             new_html_element.setAttribute("class", "k_ele_freq");
 											.console.log(new_html_element.textContent " + is k_ele_freq);
@@ -289,7 +289,7 @@
                                             new_html_element.setAttribute("class","k_ele_other");
 											.console.log(new_html_element.textContent " + is k_ele_other);
                                         }
-                                    }
+                                    } new_html_element.textContent = k_ele[m].children[k].textContent;
                                     //console.log("appending \"" + new_html_element.textContent + "\" to k_ele_container");
 
 
