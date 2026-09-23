@@ -128,7 +128,14 @@
                 entries=xmlDoc.getElementsByTagName("entry");
                 new_iframe = document.createElement("iframe");
                 new_iframe.setAttribute("class","results_container_column");
-                results_container.appendChild(new_iframe);
+
+				// push newer searches to top
+				if (results_container.childElementCount == 0 ) {
+                    results_container.appendChild(new_iframe);
+			    else {
+					results_container.children[0].before(new_iframe);
+				}
+				
                 results_container_column = new_iframe.contentWindow.document;
                 // inject parent css
                 document.querySelectorAll('style').forEach(style => {
