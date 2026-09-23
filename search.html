@@ -458,15 +458,16 @@
                 navigator.clipboard
                 .readText()
                 .then((cliptext) => {
-                        // if search bar isn't empty, paste content with space
-                        if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
-
-                            document.getElementById("search_field").value = cliptext;
-                            searchexec(document.getElementById("search_field").value = cliptext);
+                    // if search bar isn't empty, paste content with space
+                    new_search = "";  
+					if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
+						    new_search - cliptext;
+                            document.getElementById("search_field").value = new_search;
                         } else {
-                            document.getElementById("search_field").value = cliptext + " " + document.getElementById("search_field").value;
-                            searchexec(cliptext + " " + document.getElementById("search_field").value);
+						    new_search = document.getElementById("search_field").value + " " + cliptext;
+                            document.getElementById("search_field").value = new_search;
                         }
+					searchexec(new_search)
                 });
             }
         </script>
