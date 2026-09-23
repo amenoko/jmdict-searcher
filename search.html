@@ -159,9 +159,7 @@
 
 
                         if (found_kanji)  {
-							row_container_prio = results_container_column.createElement("div");
-							row_container_prio.setAttribute("class", "prio_container");
-							results_container_column.body.appendChild(row_container_prio);
+							
                             row_container = results_container_column.createElement("div");
                             row_container.setAttribute("class","row_container");
                             results_container_column.body.appendChild(row_container);
@@ -235,6 +233,10 @@
                     if (found) {
 						priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
                         results_counter++;
+						row_prio_container = results_container_column.createElement("div");
+						row_prio_container.setAttribute("class", "row_prio_container");
+						row_prio_container.style.setProperty("display", "none");
+						results_container_column.body.appendChild(row_prio_container);
                         //await results_counter_update(results_counter);
 
                         // if kanji search already found a candidate it will have created
@@ -361,8 +363,11 @@
 
 						// reordering
 						if (priority == 0) {results_container_column.body.appendChild(row_container);} 
-						else if (priority == 1) {results_container_column.body.insertBefore(row_container, results_container_column.body.children[1]);}
-						else {row_container_prio.appendChild(row_container);}
+						else if (priority == 1) {results_container_column.body.insertAfter(row_container, row_prio_container);}
+						else {
+							row_prio_container.appendChild(row_container);
+							row_prio_container.style.setProperty("display", "flex");
+						}
 
                         if (display_counter) {await results_counter_update(results_counter);}
                     }
