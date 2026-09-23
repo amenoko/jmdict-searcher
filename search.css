@@ -101,12 +101,14 @@ margin: 0px 5px 5px 5px;
     margin-bottom:400px;
 }
 .senses_block_container {
-    margin:5px 0px 5px 0px;
+    margin:0px 0px 5px 0px;
     padding:0px;
 }
+.senses_block_container:last-child {margin:0px;}
 .senses_container {
     display:flex;
     flex-direction:column;
+    margin:5px;
     /*flex-wrap:wrap;*/
 }
 
