@@ -208,7 +208,7 @@
                 }
 				row_prio_container = results_container_column.createElement("div");	
 				row_prio_container.setAttribute("class", "row_prio_container");
-				row_prio_container.style.setProperty("display", "none");
+				//row_prio_container.style.setProperty("display", "none");
 				results_container_column.body.appendChild(row_prio_container);
 
 
@@ -361,10 +361,10 @@
 
 						// reordering
 						if (priority == 0) {results_container_column.body.appendChild(row_container);} 
-						else if (priority == 1) {results_container_column.body.after(row_container, row_prio_container);}
+						else if (priority == 1) {row_prio_container.after(row_container);}
 						else {
 							row_prio_container.appendChild(row_container);
-							row_prio_container.style.setProperty("display", "flex");
+							//row_prio_container.style.setProperty("display", "flex");
 						}
 
                         if (display_counter) {await results_counter_update(results_counter);}
