@@ -399,7 +399,7 @@
             async function searchexec(optional_string) {
                 // for safety, if we were passed a string, use that
                 // worried about race conditions, I dunno
-                if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) != null) {
+                if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) == null) {
                     search_field_contents = document.getElementById("search_field").value;
                 } else {
                     search_field_contents = optional_string;
