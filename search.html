@@ -203,14 +203,13 @@
                             new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
                             new_html_element.setAttribute("class", "kanjidic2_readings");
                             row_container.appendChild(new_html_element);
-
-
                         }
                     }
                 }
 				row_prio_container = results_container_column.createElement("div");	
 				row_prio_container.setAttribute("class", "row_prio_container");
 				row_prio_container.style.setProperty("display", "none");
+				results_container_column.body.appendChild(row_prio_container);
 
 
                 for (let i=0;i < entries.length;i++) {
@@ -236,8 +235,6 @@
                     if (found) {
 						priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
                         results_counter++;
-						
-						results_container_column.body.appendChild(row_prio_container);
                         //await results_counter_update(results_counter);
 
                         // if kanji search already found a candidate it will have created
