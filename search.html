@@ -31,7 +31,7 @@
                 //status_update("Loading JMdict");
                /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
                 try {
-                    const response = await fetch("JMdict_stripped.xml.gz");
+                    const response = await fetch("JMdict.xml.gz");
                     if (!response.ok) {
                     throw new Error(`Response status: ${response.status}`);
                     }
@@ -46,7 +46,7 @@
 
                 } catch (error) {
                     console.error(error.message);
-                    status_update("Failed to load JMdict");
+                    return 1;
                 }
 
                 try {
@@ -79,7 +79,7 @@
 
                 } catch (error) {
                     console.error(error.message);
-                    await status_update("Failed to load kanjidic2");
+                    return 2;
                 }
 
 
@@ -102,7 +102,9 @@
                 url_query_params = new URLSearchParams(window.location.search);
                 url_query_search_word = url_query_params.get('q');
                 document.getElementById("search_field").value = url_query_search_word;
-                init();
+                init_status = init();
+                if(init_status == 1) {status_update("Failed to load JMdict");}
+                else if (init_status == 2) {status_update("Failed to load kanjidic2");}
             }, false);
 
 
@@ -358,8 +360,7 @@
                     no_results.textContent = "No results for \"" + search_word + "\"";
                     no_results.setAttribute("class", "no_results");
                     results_container_column.body.appendChild(no_results);
-                } else {
-                    document.getElementById("greeting").style.setProperty("display", "none"); }
+                }
                 return new Promise(resolve => setTimeout(resolve, 10));
             }
             /*
@@ -400,9 +401,10 @@
                     return;
                 }
 
+
                 results_counter=0;
                 await unfocus();
-
+                document.getElementById("greeting").style.setProperty("display", "none");
                 // add search word to url
                 url = new URL(window.location);
                 url.searchParams.set('q', search_field_contents);
@@ -492,7 +494,7 @@
         <br>feature ideas: ordering by commonness, moving exact matches to the top regardless of commonnness, regex search,
 		<strike>basic kanjidic2 integration</strike>, better mobile auto-hide / search field focusing/defocusing,
 		eliminate iframe (results sub-window) minimum height, extract+display build dates for jmdict and kanjidic2
-		(jmdict gets a new build everyday), fix "please wait" overflow on mobile, "paste from clipboard" button, button for emptying search field, changing various things to hyperlinks (e.g. jisho kanji page), click to copy to clipboard
+		(jmdict gets a new build everyday), <strike>fix "please wait" overflow on mobile</strike>, <strike>"paste from clipboard" button, button for emptying search field</strike>, changing various things to hyperlinks (e.g. jisho kanji page), click to copy to clipboard
 		<br><a href="https://github.com/amenoko/jmdict-searcher/tree/main">github</a>
         </div>
     </body>
