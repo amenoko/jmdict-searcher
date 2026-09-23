@@ -25,12 +25,14 @@ body {
     margin:0px;
 }
 
+#greeting {display:none;margin:10px;}
+
 a, a:visited {color:var(--accent);text-decoration:none;}
 a:hover {text-decoration:underline;}
 
 .no_results {
     color:var(--fg2);
-    margin:5px;
+    margin:10px;
 }
 .meanings_readings {
     width: 25%;
@@ -61,12 +63,10 @@ a:hover {text-decoration:underline;}
 
 
 #results_container {
-display:flex;
+display:none;
 flex-direction:column;
 flex-grow:1;
 margin: 0px 5px 5px 5px;
-opacity:0;
-
 }
 .results_container_column {
     border:solid 1px;
@@ -111,7 +111,6 @@ input  {
     padding:0px;
     border-color: var(--accent);
     border-radius:5px;
-    height:30px;
     font-family: BR Wakaisho;
     font-size:18px;
 }
@@ -120,30 +119,42 @@ input:hover {
 }
 #status {
 font-size: 16px;
-}
-
-#search_field {
-width: 300px;
+text-align:center;
 }
 
 #search_button {
-width:50px;
+    opacity:1;
+
 }
-#search_field, #search_button, #status {
-margin-right:10px;
+#search_field, #search_button, #paste {
+    flex-grow:1;
+}
+
+#search_field, #search_button, #status, #paste {
+    margin-right:5px;
 }
 
 #search_bar {
 display:flex;
 flex-direction:row;
-align-items:center;
-margin: 5px 0px 0px 5px;
+align-content:center;
+padding: 5px 0px 0px 5px;
+}
+#search_field {
+    height:35px;
+    min-width:0px;
+}
+input, #search_button, #search_field, #paste {
+
+    align-content:center;
 }
 
+#results_count, #status {
+    margin-left:5px;
+    align-content:center;
+}
 #results_count {
-text-align:right;
 flex-grow:1;
-margin-right:5px;
 }
 input {
     padding: 0px 5px 0px 5px;

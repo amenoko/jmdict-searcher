@@ -25,7 +25,7 @@
                 //status_update("Loading JMdict");
                /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
                 try {
-                    const response = await fetch("JMdict.xml.gz");
+                    const response = await fetch("JMdict_stripped.xml.gz");
                     if (!response.ok) {
                     throw new Error(`Response status: ${response.status}`);
                     }
@@ -56,16 +56,18 @@
                     xmlDoc_kanji = new window.DOMParser().parseFromString(inflated, "text/xml");
 
                     // if url has keyword, use them
-                    url_query_params = new URLSearchParams(window.location.search);
-                    url_query_search_word = url_query_params.get('q');
+                    // url_query_params = new URLSearchParams(window.location.search);
+                    // url_query_search_word = url_query_params.get('q');
                     if (url_query_search_word) {
                         console.log("url keywords: " + url_query_search_word);
-                        document.getElementById("search_field").value = url_query_search_word;
+                        //document.getElementById("search_field").value = url_query_search_word;
                         status_update("Searching...");
                         searchexec();
                     } else {
                         document.getElementById("search_field").focus();
                         status_update("Ready");
+                        results_container = document.getElementById("greeting");
+                        results_container.style.setProperty("display", "block");
                     }
                     console.log("loaded kanjidic2");
 
@@ -74,8 +76,7 @@
                     status_update("Failed to load kanjidic2");
                 }
 
-                results_container = document.getElementById("results_container");
-                results_container.setAttribute("style", "opacity:1;");
+
             }
 
             async function results_counter_update(counter) {
@@ -88,8 +89,13 @@
             results_counter=0;
 
 
+
+
             document.addEventListener('DOMContentLoaded', function () {
                 console.log("DOMContentLoaded");
+                url_query_params = new URLSearchParams(window.location.search);
+                url_query_search_word = url_query_params.get('q');
+                document.getElementById("search_field").value = url_query_search_word;
                 init();
             }, false);
 
@@ -99,6 +105,7 @@
             async function searchXML(search_word) {
                 console.log("searchXML begin, search_word = " + search_word);
                 results_container = document.getElementById("results_container");
+                results_container.style.setProperty("display", "flex");
 
                 if (search_word === null || search_word.match(/^ *$/) !== null) {
                     console.log("empty, quitting");
@@ -341,9 +348,12 @@
                 results_container_column.body.setAttribute("class","results_container_column_inside");
                 console.log("results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
                 if(results_container_column.body.childElementCount == 0) {
-                    results_container_column.body.setAttribute("class", "no_results");
-                    results_container_column.body.textContent = "No results for \"" + search_word + "\"";
-                }
+                    no_results = results_container_column.createElement("div");
+                    no_results.textContent = "No results for \"" + search_word + "\"";
+                    no_results.setAttribute("class", "no_results");
+                    results_container_column.body.appendChild(no_results);
+                } else {
+                    document.getElementById("greeting").style.setProperty("display", "none"); }
                 return new Promise(resolve => setTimeout(resolve, 10));
             }
             /*
@@ -360,12 +370,24 @@
 
             });
 
-            async function searchexec() {
-                search_field_contents = document.getElementById("search_field").value;
+            async function searchexec(optional_string) {
+                // for safety, if we were passed a string, use that
+                // worried about race conditions, I dunno
+                if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) != null) {
+                    search_field_contents = document.getElementById("search_field").value;
+                } else {
+                    search_field_contents = optional_string;
+                }
                 console.log("search_field_contents = " + search_field_contents);
                 if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
                     console.log("Empty, quitting");
-                    //await status_update("Empty search");
+                    await status_update("");
+                    document.getElementById("results_count").textContent = "";
+                    document.getElementById("greeting").style.setProperty("display", "block");
+                    document.getElementById("results_container").style.setProperty("display", "none");
+                    // remove search word from url if there was any
+                    url = new URL(window.location);
+                    url.searchParams.delete("*");
                     return;
                 }
 
@@ -391,9 +413,31 @@
                         if (display_counter) {await results_counter_update(results_counter);}
                     }
                 }
-                await status_update("Idle");
+                await status_update("");
                 //document.getElementById("search_field").focus(); annoying on mobile, as it turns out
                 console.log("searchexec() end");
+            }
+
+            function paste() {
+                /*const destination = document.getElementById("outbox");
+                destinationImage.addEventListener("click", () => {
+                    navigator.clipboard
+                    .readText()
+                    .then((clipText) => (destination.innerText = clipText));
+                });*/
+                navigator.clipboard
+                .readText()
+                .then((cliptext) => {
+                        // if search bar isn't empty, paste content with space
+                        if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
+
+                            document.getElementById("search_field").value = cliptext;
+                            searchexec(document.getElementById("search_field").value = cliptext);
+                        } else {
+                            document.getElementById("search_field").value = cliptext + " " + document.getElementById("search_field").value;
+                            searchexec(cliptext + " " + document.getElementById("search_field").value);
+                        }
+                });
             }
         </script>
     </head>
@@ -401,6 +445,7 @@
     <div id="search_bar">
         <input type="text" name="literal" id="search_field">
         <input type="submit" value="Go" onClick="searchexec()" id="search_button">
+        <input type="submit" value="Paste & Go" onClick="paste()" id="paste">
         <div id="status">Please wait...</div>
         <div id="results_count"></div>
     </div>
@@ -413,10 +458,10 @@
             }
         });
     </script>
-    <div id="results_container"><div style="color:var(--fg2);">
+    <div id="results_container"></div><div id="greeting"><div style="color:var(--fg2);">
         <br>
         Frequency tags:
-        <ul <style="font-style:italic;"><li>news1/2: appears in the "wordfreq" file compiled by Alexandre Girardi
+        <ul style="font-style:italic;"><li>news1/2: appears in the "wordfreq" file compiled by Alexandre Girardi
         from the Mainichi Shimbun. (See the Monash ftp archive for a copy.)
         Words in the first 12,000 in that file are marked "news1" and words
         in the second 12,000 are marked "news2".</li>
