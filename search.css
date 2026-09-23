@@ -25,6 +25,8 @@ body {
     margin:0px;
 }
 
+.grey {color:var(--fg1);}
+
 #greeting {display:none;margin:10px;}
 
 a, a:visited {color:var(--accent);text-decoration:none;}
