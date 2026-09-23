@@ -363,7 +363,7 @@
 
 						// reordering
 						if (priority == 0) {results_container_column.body.appendChild(row_container);} 
-						else if (priority == 1) {results_container_column.body.insertAfter(row_container, row_prio_container);}
+						else if (priority == 1) {results_container_column.body.after(row_container, row_prio_container);}
 						else {
 							row_prio_container.appendChild(row_container);
 							row_prio_container.style.setProperty("display", "flex");
