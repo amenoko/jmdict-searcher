@@ -93,6 +93,11 @@ margin: 0px 5px 5px 5px;
     border-width:1px;
     border-color: var(--fg3);
 }
+
+.prio {
+    display:flex;
+    flex-direction: column;
+}
 .results_container_column_inside {
     margin-bottom:400px;
 }
