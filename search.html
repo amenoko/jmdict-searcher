@@ -61,11 +61,11 @@
                     if (url_query_search_word) {
                         console.log("url keywords: " + url_query_search_word);
                         //document.getElementById("search_field").value = url_query_search_word;
-                        status_update("Searching...");
+                        await status_update("Searching...");
                         searchexec();
                     } else {
                         document.getElementById("search_field").focus();
-                        status_update("Ready");
+                        await status_update("Ready");
                         results_container = document.getElementById("greeting");
                         results_container.style.setProperty("display", "block");
                     }
@@ -73,7 +73,7 @@
 
                 } catch (error) {
                     console.error(error.message);
-                    status_update("Failed to load kanjidic2");
+                    await status_update("Failed to load kanjidic2");
                 }
 
 
