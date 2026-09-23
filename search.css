@@ -94,8 +94,7 @@ margin: 0px 5px 5px 5px;
     border-color: var(--fg3);
 }
 
-.prio_container {
-    display:flex;
+.row_prio_container {
     flex-direction: column;
 }
 .results_container_column_inside {
