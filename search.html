@@ -8,7 +8,13 @@
         <script src="pako.min.js"></script>
         <script language="JavaScript" type="text/javascript">
             async function status_update(text) {
-                document.getElementById("status").innerHTML = text;
+                widget = document.getElementById("status");
+                if (text == "") {
+                    widget.style.setProperty("display", "none");
+                } else {
+                    widget.innerHTML = text;
+                    widget.style.setProperty("display", "block");
+                }
                 return new Promise(resolve => setTimeout(resolve, 0));
 
             }
@@ -25,7 +31,7 @@
                 //status_update("Loading JMdict");
                /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
                 try {
-                    const response = await fetch("JMdict.xml.gz");
+                    const response = await fetch("JMdict_stripped.xml.gz");
                     if (!response.ok) {
                     throw new Error(`Response status: ${response.status}`);
                     }
@@ -386,15 +392,18 @@
                     document.getElementById("greeting").style.setProperty("display", "block");
                     document.getElementById("results_container").style.setProperty("display", "none");
                     // remove search word from url if there was any
-                    url = new URL(window.location);
-                    url.searchParams.delete("*");
+                    url = window.location;
+                    console.log("url: " + url);
+                    url = url.toString().match(/.*\?/).toString().slice(0,-1);
+                    window.history.pushState({},'',url);
+                    console.log("url: " + url);
                     return;
                 }
 
                 results_counter=0;
                 await unfocus();
 
-                // add search word in url
+                // add search word to url
                 url = new URL(window.location);
                 url.searchParams.set('q', search_field_contents);
                 window.history.pushState({}, '', url);
@@ -458,7 +467,7 @@
             }
         });
     </script>
-    <div id="results_container"></div><div id="greeting"><div style="color:var(--fg2);">
+    <div id="results_container"></div><div id="greeting">
         <br>
         Frequency tags:
         <ul style="font-style:italic;"><li>news1/2: appears in the "wordfreq" file compiled by Alexandre Girardi
@@ -483,9 +492,8 @@
         <br>feature ideas: ordering by commonness, moving exact matches to the top regardless of commonnness, regex search,
 		<strike>basic kanjidic2 integration</strike>, better mobile auto-hide / search field focusing/defocusing,
 		eliminate iframe (results sub-window) minimum height, extract+display build dates for jmdict and kanjidic2
-		(jmdict gets a new build everyday), fix "please wait" overflow on mobile, "paste from clipboard" button, button for emptying search field, changing various things to hyperlinks (e.g. jisho kanji page), click to copy to clipboard</div>
+		(jmdict gets a new build everyday), fix "please wait" overflow on mobile, "paste from clipboard" button, button for emptying search field, changing various things to hyperlinks (e.g. jisho kanji page), click to copy to clipboard
 		<br><a href="https://github.com/amenoko/jmdict-searcher/tree/main">github</a>
-    </div>
-
+        </div>
     </body>
 </html>
