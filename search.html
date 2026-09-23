@@ -107,7 +107,7 @@
                 else if (init_status == 2) {status_update("Failed to load kanjidic2");}
 				new_html_element = document.createElement("div");
 				modified = new Date(document.lastModified);
-				new_html_element.textContent = "last modified: " + modified.toISOString().slice(1,10) + " " + modified.toISOString().slice(12, -5);
+				new_html_element.textContent = "Modified: " + modified;
 				new_html_element.setAttribute("class", "grey");
 				document.getElementById("greeting").appendChild(new_html_element);
             }, false);
