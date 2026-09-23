@@ -66,10 +66,10 @@ a:hover {text-decoration:underline;}
 
 
 #results_container {
-display:none;
-flex-direction:column;
-flex-grow:1;
-margin: 0px 5px 5px 5px;
+    display:none;
+    flex-direction:column;
+    flex-grow:1;
+    margin: 0px 5px 5px 5px;
 }
 .results_container_column {
     border:solid 1px;
@@ -144,11 +144,11 @@ input:hover {
 }
 
 #search_bar {
-display:flex;
-flex-direction:row;
-align-content:center;
-padding: 5px 0px 0px 5px;
-height:35px;
+    display:flex;
+    flex-direction:row;
+    align-content:center;
+    padding: 5px 0px 0px 5px;
+    height:35px;
 }
 
 #search_button, #paste {
