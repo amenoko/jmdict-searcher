@@ -130,7 +130,7 @@
                 new_iframe.setAttribute("class","results_container_column");
 
 				// push newer searches to top
-				if (results_container.childElementCount == 0 ) {
+				if (results_container.length == 0 ) {
                     results_container.appendChild(new_iframe);
 				} else {
 					results_container.children[0].before(new_iframe);
