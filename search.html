@@ -225,6 +225,7 @@
                     }
 
                     if (found) {
+						priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
                         results_counter++;
                         //await results_counter_update(results_counter);
 
@@ -264,10 +265,12 @@
                                             line_break = results_container_column.createElement("br");
                                             k_ele_container.appendChild(line_break);
                                         }
+										if(k_ele[m].children[k].textContent == search_word) {priority=2;}
                                     } else {
                                         if (k_ele[m].children[k].textContent.match(/^news[0-9]*|^ichi[0-9]|^spec[0-9]|^gai[0-9]|^nf[0-9]*/)) {
                                             // is frequency tag
                                             new_html_element.setAttribute("class", "k_ele_freq");
+											if(priority == 0) {priority=1;}
                                         } else {
                                             new_html_element.setAttribute("class","k_ele_other");
                                         }
@@ -290,6 +293,7 @@
                             new_html_element.textContent = element.textContent;
                             //console.log("appending \"" + new_html_element.textContent + "\" to meanings_readings");
                             meanings_readings.appendChild(new_html_element);
+							if(element.textContent == search_word && priority == 0) {priority=1;}
                         }
                         meanings_readings.appendChild(k_ele_container);
                         row_container.appendChild(meanings_readings);
@@ -346,7 +350,9 @@
                             }
                             row_container.appendChild(senses_container);
                         }
-                        results_container_column.body.appendChild(row_container);
+
+						// reordering
+						if (priority == 0) {results_container_column.body.appendChild(row_container);} else {results_container_column.body.insertBefore(row_container, results_container_column.body.children[2]);}
 
                         if (display_counter) {await results_counter_update(results_counter);}
                     }
