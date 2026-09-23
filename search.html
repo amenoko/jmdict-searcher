@@ -159,6 +159,9 @@
 
 
                         if (found_kanji)  {
+							row_container_prio = results_container_column.createElement("div");
+							row_container_prio.setAttribute("class", "row_container prio");
+							results_container_column.body.appendChild(row_container_prio);
                             row_container = results_container_column.createElement("div");
                             row_container.setAttribute("class","row_container");
                             results_container_column.body.appendChild(row_container);
@@ -357,7 +360,9 @@
                         }
 
 						// reordering
-						if (priority == 0) {results_container_column.body.appendChild(row_container);} else {results_container_column.body.insertBefore(row_container, results_container_column.body.children[1]);}
+						if (priority == 0) {results_container_column.body.appendChild(row_container);} 
+						else if (priority == 1) {results_container_column.body.insertBefore(row_container, results_container_column.body.children[1]);}
+						else {row_container_prio.appendChild(row_container);}
 
                         if (display_counter) {await results_counter_update(results_counter);}
                     }
