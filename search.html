@@ -464,7 +464,7 @@
                     // if search bar isn't empty, paste content with space
                     new_search = "";  
 					if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
-						    new_search - cliptext;
+						    new_search = cliptext;
                             document.getElementById("search_field").value = new_search;
                         } else {
 						    new_search = document.getElementById("search_field").value + " " + cliptext;
