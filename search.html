@@ -106,7 +106,8 @@
                 if(init_status == 1) {status_update("Failed to load JMdict");}
                 else if (init_status == 2) {status_update("Failed to load kanjidic2");}
 				new_html_element = document.createElement("div");
-				new_html_element.textContent = "document.lastModified: " + document.lastModified;
+				modified = new Date(document.lastModified);
+				new_html_element.textContent = "last modified: " + modified.toISOString();
 				new_html_element.setAttribute("class", "grey");
 				document.getElementById("greeting").appendChild(new_html_element);
             }, false);
