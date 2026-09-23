@@ -414,8 +414,11 @@
                     // remove search word from url if there was any
                     url = window.location;
                     console.log("url: " + url);
-                    url = url.href.match(/.*\?/).toString().slice(0,-1);
-                    window.history.pushState({},'',url);
+					snip = url.href.match(/.*\?/);
+					if (snip != null) {
+						snip.toString().slice(0,-1);
+                        window.history.pushState({},'',url);
+					}
                     console.log("url: " + url);
                     return;
                 }
