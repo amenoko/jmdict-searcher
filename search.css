@@ -18,7 +18,7 @@ body {
     color: var(--fg1);
     background-color: var(--bg1);
     font-family: BR Wakaisho, brw;
-    font-size: 16px;
+    font-size: 14px;
     display:flex;
     flex-direction:column;
     height: 100vh;
@@ -60,7 +60,7 @@ a:hover {text-decoration:underline;}
 .k_ele_other:last-child, .k_ele_freq:last-child {margin-right:0px;}
 .k_ele_freq {
     color:var(--accent);
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 
 
@@ -82,7 +82,7 @@ margin: 0px 5px 5px 5px;
 
 .senses_extras {
     color: var(--fg2);
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .row_container {
@@ -208,6 +208,6 @@ k_ele_container > br {display:none;} {
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
     .k_ele_other, .keb {display:block;}
-    body {zoom:90%;}
+    body {zoom:95%;}
     .k_ele_container > br {display:none;}
     #status {padding:0px;}
