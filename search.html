@@ -108,8 +108,6 @@ document.addEventListener('DOMContentLoaded', function () {
     modified = new Date(document.lastModified);
     new_html_element.textContent = "last update: " + modified;
     new_html_element.setAttribute("class", "grey");
-    line_break = document.createElement("br");
-    document.getElementById("greeting").appendChild(line_break);
     document.getElementById("greeting").appendChild(new_html_element);
 }, false);
 
