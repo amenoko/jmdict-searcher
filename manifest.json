@@ -1,8 +1,8 @@
 {
   "name": "Jmdict Searcher",
   "short_name": "JMd",
-  "theme_color": "#3b82f6",
-  "background_color": "#ffffff",
+  "theme_color": "#81bfdc",
+  "background_color": "#1c1c22",
   "display": "standalone",
   "orientation": "any",
   "scope": "/",
