@@ -25,7 +25,7 @@ body {
     margin:0px;
 }
 
-.grey {color:var(--fg1);}
+.grey {color:var(--fg2);}
 
 #greeting {display:none;margin:10px;}
 
