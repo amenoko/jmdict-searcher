@@ -20,10 +20,29 @@ async function status_update(text) {
 
 }
 
+async function focus() {
+    document.getElementById("search_field").focus();
+}
+
 async function unfocus() {
     document.getElementById("search_field").blur();
     return new Promise(resolve => setTimeout(resolve, 0));
 }
+
+async function disable_input(value) {
+    if(value == null) { value = true; }
+    document.getElementById("search_field").disabled = value;
+    document.getElementById("search_button").disabled = value;
+    document.getElementById("paste").disabled = value;
+    document.getElementById("clear").disabled = value;
+    return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+
+function clear_input() {
+    document.getElementById("search_field").value = "";
+}
+
 // jmdict
 let xmlDoc = null;
 // kanjidic2
@@ -66,15 +85,16 @@ async function init() {
         // url_query_params = new URLSearchParams(window.location.search);
         // url_query_search_word = url_query_params.get('q');
         if (url_query_search_word) {
-        console.log("url keywords: " + url_query_search_word);
-        //document.getElementById("search_field").value = url_query_search_word;
-        await status_update("Searching...");
-        searchexec();
+            console.log("url keywords: " + url_query_search_word);
+            //document.getElementById("search_field").value = url_query_search_word;
+            await disable_input();
+            await status_update("Searching...");
+            searchexec();
         } else {
-        document.getElementById("search_field").focus();
-        await status_update("Ready");
-        results_container = document.getElementById("greeting");
-        results_container.style.setProperty("display", "block");
+            document.getElementById("search_field").focus();
+            await status_update("Ready");
+            results_container = document.getElementById("greeting");
+            results_container.style.setProperty("display", "block");
         }
         console.log("loaded kanjidic2");
 
@@ -82,6 +102,7 @@ async function init() {
         console.error(error.message);
         return 2;
     }
+    return new Promise(resolve => setTimeout(resolve, 0));
 }
 
 async function results_counter_update(counter) {
@@ -94,19 +115,24 @@ display_counter=true; //for checking whether result lists are affected by async?
 results_counter=0;
 
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+// if reload, disable input
+    window.onbeforeunload = disable_input();
     console.log("DOMContentLoaded");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
     document.getElementById("search_field").value = url_query_search_word;
-    init_status = init();
+    init_status = await init();
     if(init_status == 1) {status_update("Failed to load JMdict");}
     else if (init_status == 2) {status_update("Failed to load kanjidic2");}
+    // if search is queued by URL params, don't free search field; searchexec() does it when it's done
+    if(url_query_search_word == null) { await disable_input(false); }
     new_html_element = document.createElement("div");
     modified = new Date(document.lastModified);
     new_html_element.textContent = "last update: " + modified;
     new_html_element.setAttribute("class", "grey");
     document.getElementById("greeting").appendChild(new_html_element);
+
 }, false);
 
 
@@ -167,7 +193,6 @@ async function searchXML(search_word) {
             }
 
             if (found_kanji) {
-                new_iframe.style.setProperty("display", "block"); // dunno, it's not assigned by css, just wanna make it appear
                 row_container = results_container_column.createElement("div");
                 row_container.setAttribute("class","row_container");
 
@@ -227,6 +252,7 @@ async function searchXML(search_word) {
             }
         } // end of kanjidic2 query loop
     }
+    if (found_kanji) { new_iframe.style.setProperty("display", "block"); }
 
     row_prio_container = results_container_column.createElement("div");
     row_prio_container.setAttribute("class", "row_prio_container");
@@ -251,7 +277,6 @@ async function searchXML(search_word) {
         }
 
         if (found) {
-            new_iframe.style.setProperty("display", "block");
             priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
             results_counter++;
             //await results_counter_update(results_counter);
@@ -402,7 +427,9 @@ async function searchXML(search_word) {
             else if (priority == 3) { row_prio_container.before(row_container); }
             else { results_container_column.body.appendChild(row_container); }
         } // if (found)
+
     }// jmdict main for-loop
+    new_iframe.style.setProperty("display", "block");
 
     console.log("results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
     if(results_container_column.body.childElementCount < 2 && row_prio_container.childElementCount == 0) {
@@ -414,74 +441,62 @@ async function searchXML(search_word) {
     return new Promise(resolve => setTimeout(resolve, 10));
 }
 
-
-/*
-window.addEventListener("load", (event) => {
-//status_update("Ready");
-//document.getElementById("search_field").focus();
-url_query_params = new URLSearchParams(window.location.search);
-url_query_search_word = url_query_params.get('q');
-if (url_query_search_word) {
-console.log("url keywords: " + url_query_search_word);
-searchXML(url_query_search_word); }
-});*/
-window.addEventListener('DOMContentLoaded', () => {
-
-});
-
 async function searchexec(optional_string) {
-// for safety, if we were passed a string, use that
-// worried about race conditions, I dunno
-if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) == null) {
-search_field_contents = document.getElementById("search_field").value;
-} else {
-search_field_contents = optional_string;
-}
-console.log("search_field_contents = " + search_field_contents);
-if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
-console.log("Empty, quitting");
-await status_update("");
-document.getElementById("results_count").textContent = "";
-document.getElementById("greeting").style.setProperty("display", "block");
-document.getElementById("results_container").style.setProperty("display", "none");
-// remove search word from url if there was any
-url = window.location;
-console.log("url: " + url);
-snip = url.href.match(/.*\?/);
-if (snip != null) {
-snip.toString().slice(0,-1);
-window.history.pushState({},'',url);
-}
-console.log("url: " + url);
-return;
-}
+    // for safety, if we were passed a string, use that
+    // worried about race conditions, I dunno
+    if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) == null) {
+        search_field_contents = document.getElementById("search_field").value;
+    } else {
+        search_field_contents = optional_string;
+    }
+    console.log("search_field_contents = " + search_field_contents);
+    if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
+        console.log("Empty, quitting");
+        await status_update("");
+        document.getElementById("results_count").textContent = "";
+        document.getElementById("greeting").style.setProperty("display", "block");
+        document.getElementById("results_container").style.setProperty("display", "none");
+        // remove search word from url if there was any
+        url = window.location;
+        console.log("url: " + url);
+        snip = url.href.match(/.*\?/);
+        if (snip != null) {
+            snip.toString().slice(0,-1);
+            window.history.pushState({},'',url);
+        }
+        console.log("url: " + url);
+        return;
+    }
 
+    results_counter=0;
+    await disable_input(true);
+    await unfocus();
+    document.getElementById("greeting").style.setProperty("display", "none");
+    // add search word to url
+    url = new URL(window.location);
+    url.searchParams.set('q', search_field_contents);
+    window.history.pushState({}, '', url);
 
-results_counter=0;
-await unfocus();
-document.getElementById("greeting").style.setProperty("display", "none");
-// add search word to url
-url = new URL(window.location);
-url.searchParams.set('q', search_field_contents);
-window.history.pushState({}, '', url);
+    if (display_counter) {await results_counter_update(results_counter);}
+    search_array= search_field_contents.trim().split(/\s+/);
+    document.getElementById("results_container").innerHTML = "";
+    await status_update("Searching...");
+    for (let x=0;x<search_array.length;x++) {
+        console.log("Calling searchXML(\"" + search_array[x] + "\")");
+        if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
+            /* setTimeout(function() {
+            searchXML(search_array[x]);
+            }, 100); */
+            await searchXML(search_array[x]);
+            await disable_input(false);
+            if (display_counter) {await results_counter_update(results_counter);}
 
-if (display_counter) {await results_counter_update(results_counter);}
-search_array= search_field_contents.trim().split(/\s+/);
-document.getElementById("results_container").innerHTML = "";
-await status_update("Searching...");
-for (let x=0;x<search_array.length;x++) {
-console.log("Calling searchXML(\"" + search_array[x] + "\")");
-if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
-/* setTimeout(function() {
-searchXML(search_array[x]);
-}, 100); */
-await searchXML(search_array[x]);
-if (display_counter) {await results_counter_update(results_counter);}
-}
-}
-await status_update("");
-//document.getElementById("search_field").focus(); annoying on mobile, as it turns out
-console.log("searchexec() end");
+        }
+    }
+    focus();
+    await status_update("Idle");
+    //document.getElementById("search_field").focus(); annoying on mobile, as it turns out
+    console.log("searchexec() end");
 }
 
 function paste() {
@@ -510,9 +525,10 @@ searchexec(new_search);
     </head>
     <body>
     <div id="search_bar">
-        <input type="text" name="literal" id="search_field">
-        <input type="submit" value="Go" onClick="searchexec()" id="search_button">
-        <input type="submit" value="Paste & Go" onClick="paste()" id="paste">
+        <input type="text" name="literal" id="search_field" disabled>
+        <input type="submit" value="Go" onClick="searchexec()" id="search_button" disabled>
+        <input type="submit" value="Paste & Go" onClick="paste()" id="paste" disabled>
+        <input type="submit" value="Clear" onClick="clear_input()" id="clear" disabled>
         <div id="status">Please wait...</div>
         <div id="results_count"></div>
     </div>
@@ -549,7 +565,7 @@ searchexec(new_search);
         <br><br>feature ideas: <strike>ordering by commonness</strike>, <strike>moving exact matches to the top regardless of commonnness</strike>, regex search,
         <strike>basic kanjidic2 integration</strike>, better mobile auto-hide / search field focusing/defocusing,
         eliminate iframe (results sub-window) minimum height, extract+display build dates for jmdict and kanjidic2
-        (jmdict gets a new build everyday), <strike>fix "please wait" overflow on mobile</strike>, <strike>"paste from clipboard" button, button for emptying search field</strike>, changing various things to hyperlinks (e.g. jisho kanji page), click to copy to clipboard
+        (jmdict gets a new build everyday), <strike>fix "please wait" overflow on mobile</strike>, <strike>"paste from clipboard" button, button for emptying search field</strike>, changing various things to hyperlinks (e.g. jisho kanji page), click to copy to clipboard, keyboard input automatically focuses search bar (dunno how if IME is involved)
         <br><br><a href="https://github.com/amenoko/jmdict-searcher/tree/main">github repo for this tool</a>
         </div>
     </body>

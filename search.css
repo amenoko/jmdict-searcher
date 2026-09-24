@@ -5,6 +5,7 @@
 :root {
     /* darker: --accent: #5290ac; */
     --accent: #81bfdc;
+    --accent_dark: #5290ac;
     --bg1: #1c1c22;
     --bg2: #202026;
     --bg3: #26262d;
@@ -84,8 +85,6 @@ margin: 0px 5px 5px 5px;
 }
 .kanjidic2_meanings {
     font-size:13px;
-
-
 }
 .kanjidic2_readings {
     color: var(--fg2);
@@ -164,26 +163,38 @@ input  {
     border-color: var(--accent);
     border-radius:5px;
     font-family: BR Wakaisho;
-    font-size:18px;
+    font-size:14px;
 }
 input:hover {
     background-color: var(--bg3);
 }
+
+#search_button:active, #paste:active, #clear:active {
+    background-color: var(--accent);
+    color:black;
+}
+
 #status {
-    font-size: 16px;
     text-align:center;
     padding: 0px 5px 0px 5px;
+    animation: animate-me 1s infinite ease;
 }
 
 #search_button {
     opacity:1;
-
 }
-#search_field, #search_button, #paste {
+@keyframes animate-me {
+    0% { color: var(--fg1); }
+    30% { color:var(--fg1); }
+    50% { color: var(--fg3); }
+    70% { color: var(--fg1); }
+    100% { color: var(--fg1); }
+}
+#search_field, #search_button, #paste, #clear {
     flex-grow:1;
 }
 
-#search_field, #search_button, #status, #paste {
+#search_field, #search_button, #status, #paste, #clear {
     margin-right:5px;
 }
 
@@ -192,23 +203,29 @@ input:hover {
     flex-direction:row;
     align-content:center;
     padding: 5px 0px 0px 5px;
-    height:35px;
+    height:28px;
 }
 
-#search_button, #paste {
-
+#search_button, #paste, #clear {
     align-content:center;
-    max-width:150px;
+    max-width:90px;
 }
 #search_field {
     min-width:0px;
     align-content:center;
     flex-grow:1;
+    max-width:300px;
+}
+
+#search_field:disabled, #search_button:disabled, #paste:disabled, #clear:disabled {
+    border-color: var(--fg2);
+    color: var(--fg2);
 }
 
 #results_count, #status {
-    margin-right:5px;
+    padding: 5px 0px 0px 5px;
     align-content:center;
+    font-size: 14px;
 }
 #results_count {
     flex-grow:1;
@@ -224,5 +241,10 @@ input {
     .k_ele_other, .keb {display:block;}
     body {zoom:95%;}
     .k_ele_container > br {display:none;}
-    #status {padding:0px;}
+    #status, #results_count {font-size:11px;}
+    #search_bar {height:35px;}
+    #search_field, #search_button, #clear { max-width:unset; }
+    #search_button, #clear, #paste { width: 100px; }
+    #paste { font-size:9px; white-space: normal;}
+    input:hover { background-color:var(--bg1); }
 }
