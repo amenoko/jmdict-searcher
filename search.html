@@ -94,8 +94,6 @@ display_counter=true; //for checking whether result lists are affected by async?
 results_counter=0;
 
 
-
-
 document.addEventListener('DOMContentLoaded', function () {
     console.log("DOMContentLoaded");
     url_query_params = new URLSearchParams(window.location.search);
@@ -128,7 +126,7 @@ async function searchXML(search_word) {
     entries=xmlDoc.getElementsByTagName("entry");
     new_iframe = document.createElement("iframe");
     new_iframe.setAttribute("class","results_container_column");
-
+    new_iframe.style.setProperty("display", "none");
 
     // push newer searches to top
     console.log("results_container.childElementCount = " + results_container.childElementCount);
@@ -137,6 +135,7 @@ async function searchXML(search_word) {
     } else {
         results_container.children[0].before(new_iframe);
     }
+
 
     results_container_column = new_iframe.contentWindow.document;
     // inject parent css
@@ -149,6 +148,7 @@ async function searchXML(search_word) {
     link.href = "search.css";
     results_container_column.head.appendChild(link);
     results_container_column.body.setAttribute("class","results_container_column_inside");
+
 
 
     // kanjidic2 query
@@ -167,9 +167,10 @@ async function searchXML(search_word) {
             }
 
             if (found_kanji) {
+                new_iframe.style.setProperty("display", "block"); // dunno, it's not assigned by css, just wanna make it appear
                 row_container = results_container_column.createElement("div");
                 row_container.setAttribute("class","row_container");
-                results_container_column.body.appendChild(row_container);
+
 
                 // add one child for kanji character, one child for meanings+readings
                 // (to be able to style kanji character separately)
@@ -178,8 +179,19 @@ async function searchXML(search_word) {
                 new_html_element.textContent = kanji_literal + "";
                 row_container.appendChild(new_html_element);
 
-
-
+                // joyo display
+                joyo_html_element = results_container_column.createElement("div");
+                joyo_html_element.setAttribute("class", "kanjidic2_joyo");
+                row_container.appendChild(joyo_html_element);
+                grade = characters[p].getElementsByTagName("grade");
+                if (grade[0] != null) {
+                    if (grade[0].textContent == 9) { joyo_html_element.textContent = "Jinmeiyō"; }
+                    else { joyo_html_element.textContent = "Jōyō"; }
+                    // append later, in case it helps with formatting
+                } else {
+                    joyo_html_element.textContent = "Hyōgai";
+                    joyo_html_element.setAttribute("class", "kanjidic2_hyougai");
+                }
 
                 // meanings
                 kanji_meanings = characters[p].getElementsByTagName("meaning");
@@ -209,6 +221,9 @@ async function searchXML(search_word) {
                 new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
                 new_html_element.setAttribute("class", "kanjidic2_readings");
                 row_container.appendChild(new_html_element);
+
+                if (grade != null) { row_container.appendChild(joyo_html_element); }
+                results_container_column.body.appendChild(row_container);
             }
         } // end of kanjidic2 query loop
     }
@@ -236,6 +251,7 @@ async function searchXML(search_word) {
         }
 
         if (found) {
+            new_iframe.style.setProperty("display", "block");
             priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
             results_counter++;
             //await results_counter_update(results_counter);
@@ -372,6 +388,8 @@ async function searchXML(search_word) {
 
                 row_container.appendChild(senses_container);
             }
+
+            if (display_counter) { await results_counter_update(results_counter); }
             // ordering
             console.log("priority (before ordering) = " + priority);
             if(kanaless_match) {
@@ -383,8 +401,6 @@ async function searchXML(search_word) {
             else if (priority == 2) { row_prio_container.appendChild(row_container); }
             else if (priority == 3) { row_prio_container.before(row_container); }
             else { results_container_column.body.appendChild(row_container); }
-
-            if (display_counter) { await results_counter_update(results_counter); }
         } // if (found)
     }// jmdict main for-loop
 

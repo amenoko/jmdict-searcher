@@ -36,6 +36,81 @@ a:hover {text-decoration:underline;}
     color:var(--fg2);
     margin:10px;
 }
+
+#results_container {
+display:none;
+flex-direction:column;
+flex-grow:1;
+margin: 0px 5px 5px 5px;
+}
+
+.results_container_column {
+    border:solid 1px;
+    border-color: var(--accent);
+    border-radius:5px;
+    margin-top: 6px;
+    flex-grow:1;
+}
+
+.row_container {
+    display:flex;
+    margin: 0px 5px 0px 5px;
+    padding: 0px 0px 0px 0px;
+    border-bottom-style: solid;
+    border-width:1px;
+    border-color: var(--fg3);
+}
+
+.row_prio_container {
+    flex-direction: column;
+}
+
+/* this was needed to account for search bar on mobile
+ * but we now have metadata for installing mobile site as
+ * app, which removes the address bar, so I think it's fine */
+/* .results_container_column_inside {
+    margin-bottom:400px;
+}*/
+
+/* KANJIDIC2 ENTRY */
+.kanjidic2_kanji, .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
+    align-content:center;
+    display:inline;
+    line-height:25px;
+
+}
+.kanjidic2_kanji {
+    font-size: 20px;
+}
+.kanjidic2_meanings {
+    font-size:13px;
+
+
+}
+.kanjidic2_readings {
+    color: var(--fg2);
+    font-size:13px;
+}
+
+.kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
+{margin: 0px 10px 0px 0px; }
+
+.kanjidic2_joyo, .kanjidic2_hyougai {
+    font-size: 10px;
+}
+.kanjidic2_joyo { color:var(--accent); }
+.kanjidic2_hyougai { color:var(--fg2); }
+
+
+.row_container:has(.kanjidic2_kanji) {
+    border-bottom-color:var(--accent);
+    flex-wrap:wrap;
+    display:block;
+    padding: 5px 0px 5px 0px;
+}
+
+
+/* JMDICT ENTRY */
 .meanings_readings {
     width: 25%;
     min-width: 25%;
@@ -63,43 +138,11 @@ a:hover {text-decoration:underline;}
     /*font-weight: bold;*/
 }
 
-
-
-#results_container {
-    display:none;
-    flex-direction:column;
-    flex-grow:1;
-    margin: 0px 5px 5px 5px;
-}
-.results_container_column {
-    border:solid 1px;
-    border-color: var(--accent);
-    border-radius:5px;
-    margin-top: 6px;
-    flex-grow:1;
-
-}
-
 .senses_extras {
     color: var(--fg2);
     font-size: 12px;
 }
 
-.row_container {
-    display:flex;
-    margin: 0px 5px 0px 5px;
-    padding: 0px 0px 0px 0px;
-    border-bottom-style: solid;
-    border-width:1px;
-    border-color: var(--fg3);
-}
-
-.row_prio_container {
-    flex-direction: column;
-}
-.results_container_column_inside {
-    margin-bottom:400px;
-}
 .senses_block_container {
     margin:0px 0px 5px 0px;
     padding:0px;
@@ -112,6 +155,7 @@ a:hover {text-decoration:underline;}
     /*flex-wrap:wrap;*/
 }
 
+/* SEARCH BAR */
 input  {
     background-color: var(--bg1);
     color: var(--fg1);
@@ -173,41 +217,12 @@ input:hover {
 input {
     padding: 0px 5px 0px 5px;
 }
-.kanjidic2_kanji, .kanjidic2_meanings, .kanjidic2_readings {
-    align-content:center;
-    display:inline;
-    line-height:25px;
-
-}
-.kanjidic2_kanji {
-    font-size: 20px;
-    margin: 0px 10px 0px 0px;
-}
-.kanjidic2_meanings {
-    font-size:13px;
-    margin: 0px 10px 0px 0px;
-
-}
-.kanjidic2_readings {
-    color: var(--fg2);
-    font-size:13px;
-
-}
 
 
-.row_container:has(.kanjidic2_kanji) {
-    border-bottom-color:var(--accent);
-    flex-wrap:wrap;
-    display:block;
-    padding: 5px 0px 5px 0px;
-}
-
-k_ele_container > br {display:none;} {
-    display:block;
-}
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
     .k_ele_other, .keb {display:block;}
     body {zoom:95%;}
     .k_ele_container > br {display:none;}
     #status {padding:0px;}
+}
