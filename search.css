@@ -76,7 +76,6 @@ margin: 0px 5px 5px 5px;
 /* KANJIDIC2 ENTRY */
 .kanjidic2_kanji, .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
     align-content:center;
-    display:inline;
     line-height:25px;
 
 }
@@ -104,8 +103,7 @@ margin: 0px 5px 5px 5px;
 .row_container:has(.kanjidic2_kanji) {
     border-bottom-color:var(--accent);
     flex-wrap:wrap;
-    display:block;
-    padding: 5px 0px 5px 0px;
+    padding: 0px 0px 0px 0px;
 }
 
 

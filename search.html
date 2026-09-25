@@ -331,13 +331,7 @@ async function searchXML(search_word) {
                                 for (s=0;s<entry_kana_stripped.length;s++) {
                                     match_string += entry_kana_stripped[s];
                                 }
-                                if (search_word == match_string ) {
-                                    kanaless_match = true;
-                                    console.log ("kana-less match: ");
-                                    console.log("entry: " + k_ele[m].children[k].textContent + " -> " + match_string);
-                                    console.log("search: " + search_word);
-                                    console.log("priority = " + priority);
-                                }
+                                if (search_word == match_string ) { kanaless_match = true; }
                             }
                         } else {
                             // frequency tag match, prio 1
@@ -347,7 +341,6 @@ async function searchXML(search_word) {
                             } else { new_html_element.setAttribute("class","k_ele_other"); }
                         }
 
-                        console.log("priority (before appending) = " + priority);
                         new_html_element.textContent = k_ele[m].children[k].textContent;
                         k_ele_container.appendChild(new_html_element);
                     }
@@ -472,14 +465,15 @@ async function searchXML(search_word) {
     return new Promise(resolve => setTimeout(resolve, 10));
 }
 
-async function searchexec(optional_string) {
-    // for safety, if we were passed a string, use that
+async function searchexec(optional_string, pushstate) {
+    if (pushstate == null) { pushstate=true; }
+
+    // for safety, if we were passed a string, prioritize it over search field
     // worried about race conditions, I dunno
     if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) == null) {
         search_field_contents = document.getElementById("search_field").value;
-    } else {
-        search_field_contents = optional_string;
-    }
+    } else { search_field_contents = optional_string; }
+
     console.log("search_field_contents = " + search_field_contents);
     if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
         console.log("Empty, quitting");
@@ -490,7 +484,8 @@ async function searchexec(optional_string) {
         url = window.location;
         snip = url.href.match(/.*\?/);
         if (snip != null) {
-            window.history.pushState({},'',snip[0].slice(0,-1));
+            if (pushstate); {
+                window.history.pushState({},'',snip[0].slice(0,-1)); }
         }
         await status_update("");
         return;
@@ -503,7 +498,7 @@ async function searchexec(optional_string) {
     // add search word to url
     url = new URL(window.location);
     url.searchParams.set('q', search_field_contents);
-    window.history.pushState({}, '', url);
+    if (pushstate) { window.history.pushState({}, '', url); }
 
     if (display_counter) {await results_counter_update(results_counter);}
     search_array= search_field_contents.trim().split(/\s+/);
@@ -527,27 +522,48 @@ async function searchexec(optional_string) {
 }
 
 function paste() {
-/*const destination = document.getElementById("outbox");
-destinationImage.addEventListener("click", () => {
-navigator.clipboard
-.readText()
-.then((clipText) => (destination.innerText = clipText));
-});*/
-navigator.clipboard
-.readText()
-.then((cliptext) => {
-// if search bar isn't empty, paste content with space
-new_search = "";
-if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
-new_search = cliptext;
-document.getElementById("search_field").value = new_search;
-} else {
-new_search = document.getElementById("search_field").value + " " + cliptext;
-document.getElementById("search_field").value = new_search;
+    /*const destination = document.getElementById("outbox");
+    destinationImage.addEventListener("click", () => {
+    navigator.clipboard
+    .readText()
+    .then((clipText) => (destination.innerText = clipText));
+    });*/
+    navigator.clipboard
+    .readText()
+        .then((cliptext) => {
+        // if search bar isn't empty, paste content with space
+        new_search = "";
+            if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
+            new_search = cliptext;
+            document.getElementById("search_field").value = new_search;
+        } else {
+            new_search = document.getElementById("search_field").value + " " + cliptext;
+            document.getElementById("search_field").value = new_search;
+        }
+        searchexec(new_search);
+    });
 }
-searchexec(new_search);
+
+window.addEventListener('popstate', async function(event) {
+    console.log("popstate event");
+    /* document.getElementById("search_field").value = url_query_search_word;
+    if (url_query_search_word) {
+            console.log("url keywords: " + url_query_search_word);
+            //document.getElementById("search_field").value = url_query_search_word;
+            await disable_input();
+            await status_update("Searching...");
+
+        } else {
+            document.getElementById("search_field").focus();
+            await status_update("");
+            results_container = document.getElementById("greeting");
+            results_container.style.setProperty("display", "block");
+    } */
+    url_query_params = new URLSearchParams(window.location.search);
+    url_query_search_word = url_query_params.get('q');
+    document.getElementById("search_field").value = url_query_search_word;
+    searchexec(url_query_search_word, false); // do not push state
 });
-}
         </script>
     </head>
     <body>
