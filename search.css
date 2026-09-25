@@ -154,6 +154,19 @@ margin: 0px 5px 5px 5px;
     /*flex-wrap:wrap;*/
 }
 
+.senses_german {
+    font-size: 12px;
+    display:inline;
+}
+
+.senses_german_lead {
+    color: var(--accent);
+    display:inline;
+    font-size: 12px;
+    margin: 0px;
+}
+.senses_german_lead:first-child { margin: 0px 5px 0px 0px; }
+
 /* SEARCH BAR */
 input  {
     background-color: var(--bg1);
@@ -177,21 +190,20 @@ input:hover {
 #status {
     text-align:center;
     padding: 0px 5px 0px 5px;
-    animation: animate-me 1s infinite ease;
+    animation: status_animation 1s ease infinite;
+}
+@keyframes status_animation {
+        0%, 35%, 85%, 100% {opacity:1;}
+        60% {opacity:0;}
 }
 
 #search_button {
     opacity:1;
 }
-@keyframes animate-me {
-    0% { color: var(--fg1); }
-    30% { color:var(--fg1); }
-    50% { color: var(--fg3); }
-    70% { color: var(--fg1); }
-    100% { color: var(--fg1); }
-}
+
 #search_field, #search_button, #paste, #clear {
     flex-grow:1;
+
 }
 
 #search_field, #search_button, #status, #paste, #clear {
@@ -220,21 +232,43 @@ input:hover {
 #search_field:disabled, #search_button:disabled, #paste:disabled, #clear:disabled {
     border-color: var(--fg2);
     color: var(--fg2);
+    animation:none;
 }
 
 #results_count, #status {
-    padding: 5px 0px 0px 5px;
+    padding: 0px 5px 0px 5px;
     align-content:center;
     font-size: 14px;
 }
 #results_count {
     flex-grow:1;
     text-align:right;
+    padding: 0px 5px 0px 0px;
 }
 input {
     padding: 0px 5px 0px 5px;
 }
 
+@keyframes sweep1 {
+    0%,10%,40%,100% { border-color: var(--accent); }
+    25% { border-color:white;}
+}
+@keyframes sweep2 {
+    0%,14%,29%,44% { border-color: var(--accent); }
+    29% { border-color:white;}
+}
+@keyframes sweep3 {
+    0%,18%,47%,100% { border-color: var(--accent); }
+    32% { border-color:white;}
+}
+@keyframes sweep4 {
+    0%,20%,40%,100% { border-color: var(--accent); }
+    35% { border-color:white;}
+}
+#search_field { animation: 1s infinite sweep1; }
+#search_button { animation: 1s infinite sweep2; }
+#paste { animation: 1s infinite sweep3; }
+#clear {animation: 1s infinite sweep4; }
 
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {

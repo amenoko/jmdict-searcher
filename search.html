@@ -92,7 +92,7 @@ async function init() {
             searchexec();
         } else {
             document.getElementById("search_field").focus();
-            await status_update("Ready");
+            await status_update("");
             results_container = document.getElementById("greeting");
             results_container.style.setProperty("display", "block");
         }
@@ -371,6 +371,12 @@ async function searchXML(search_word) {
             senses_container = results_container_column.createElement("div");
             senses_container.setAttribute("class","senses_container");
             senses=entries[i].getElementsByTagName("sense");
+
+            // german gets all dumped in one block
+            senses_block_container_de = results_container_column.createElement("div");
+            senses_block_container_de.setAttribute("class","senses_block_container_de");
+            senses_block_container_de.setAttribute("display", "none");
+            found_german_in_container=false;
             for (let h=0;h < senses.length;h++) {
                 senses_block=senses[h].children;
                 senses_block_container = results_container_column.createElement("div");
@@ -378,18 +384,23 @@ async function searchXML(search_word) {
                 senses_glosses = "";
                 senses_extras = "";
                 extras = results_container_column.createDocumentFragment();
+                german_string = "";
+                found_german_in_loop=false;
                 for (j=0;j < senses_block.length;j++) {
                     senses_bit=senses_block[j];
                     if (senses_bit.textContent != "" && senses_bit.textContent != null) {
-                        if(senses_bit.getAttribute("xml:lang") == "ger"
-                        || senses_bit.getAttribute("xml:lang") == "eng"
+                        if(senses_bit.getAttribute("xml:lang") == "eng"
                         || senses_bit.getAttribute("xml:lang") == null
                         || senses_bit.getAttribute("xml:lang") == "" ) {
                             if (senses_bit.textContent.match(/^ *$/) == null) {
-                                if (senses_bit.tagName == "gloss") { senses_glosses = senses_glosses + senses_bit.textContent + "; "; }
+                                if      (senses_bit.tagName == "gloss") { senses_glosses = senses_glosses + senses_bit.textContent + "; "; }
                                 else if (senses_bit.tagName == "stagk") { senses_extras = senses_extras + "only " + senses_bit.textContent + "; "; }
                                 else { senses_extras = senses_extras + senses_bit.textContent + "; "; }
                             }
+                        } else if (senses_bit.getAttribute("xml:lang") == "ger") {
+                            german_string += senses_bit.textContent + ", ";
+                            found_german_in_loop=true;
+                            found_german_in_container=true;
                         }
                     }
                 }
@@ -407,16 +418,36 @@ async function searchXML(search_word) {
                     senses_block_container.appendChild(senses_extras_element);
                 }
 
-                if (senses_glosses != "" && senses_extras != "") {
+                if (senses_glosses != "" || senses_extras != "") {
                     senses_container.appendChild(senses_block_container);
                 }
 
                 row_container.appendChild(senses_container);
+
+                // german meanings
+                if (found_german_in_loop) {
+                    // "DE: " or similar (lead-in)
+                    senses_lead_element = results_container_column.createElement("div");
+                    senses_lead_element.setAttribute("class","senses_german_lead");
+                    senses_lead_element.textContent = "・";
+                    senses_block_container_de.appendChild(senses_lead_element);
+
+                    // string of german meanings
+                    senses_glosses_element = results_container_column.createElement("div");
+                    senses_glosses_element.setAttribute("class","senses_german");
+                    senses_glosses_element.textContent = german_string.slice(0,-2);
+                    senses_block_container_de.appendChild(senses_glosses_element);
+                }
+            }
+
+            if (found_german_in_container) {
+                senses_block_container_de.getAttribute("display", "block");
+                senses_block_container_de.children[0].textContent = "DE";
+                senses_container.appendChild(senses_block_container_de);
             }
 
             if (display_counter) { await results_counter_update(results_counter); }
             // ordering
-            console.log("priority (before ordering) = " + priority);
             if(kanaless_match) {
                 if(priority < 1) { priority=1; }
                 else if (priority == 1) { priority=2; }
@@ -452,19 +483,16 @@ async function searchexec(optional_string) {
     console.log("search_field_contents = " + search_field_contents);
     if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
         console.log("Empty, quitting");
-        await status_update("");
         document.getElementById("results_count").textContent = "";
         document.getElementById("greeting").style.setProperty("display", "block");
         document.getElementById("results_container").style.setProperty("display", "none");
         // remove search word from url if there was any
         url = window.location;
-        console.log("url: " + url);
         snip = url.href.match(/.*\?/);
         if (snip != null) {
-            snip.toString().slice(0,-1);
-            window.history.pushState({},'',url);
+            window.history.pushState({},'',snip[0].slice(0,-1));
         }
-        console.log("url: " + url);
+        await status_update("");
         return;
     }
 
@@ -490,11 +518,10 @@ async function searchexec(optional_string) {
             await searchXML(search_array[x]);
             await disable_input(false);
             if (display_counter) {await results_counter_update(results_counter);}
-
         }
     }
     focus();
-    await status_update("Idle");
+    await status_update("");
     //document.getElementById("search_field").focus(); annoying on mobile, as it turns out
     console.log("searchexec() end");
 }
