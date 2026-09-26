@@ -177,7 +177,7 @@ flex-grow:1;
 /* KANJIDIC2 ENTRY */
 .kanjidic2_kanji, .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
     align-content:center;
-    line-height:25px;
+    line-height:20px;
 }
 .kanjidic2_readings {
     color: var(--fg2);
