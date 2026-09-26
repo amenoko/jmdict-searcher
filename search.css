@@ -66,7 +66,7 @@ body, #search_button
 */
 @media (max-width: 800px) {
     #status, #results_count
-        { font-size:11px; }
+        { font-size:10px; }
     #paste, #clear_paste
         { font-size:10px; }
 }
@@ -75,6 +75,8 @@ body, #search_button
 /* MARGINS AND PADDINGS */
 #search_bar, #results_container
     { padding: 6px 6px 0px 6px; }
+#search_field, #clear
+    { padding: 0px 16px 0px 16px; }
 .row_container, #greeting
     { padding: 6px; }
 #search_button
@@ -93,6 +95,8 @@ body, #search_button
 @media (max-width: 800px) {
     #search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
         { margin-right:3px; }
+    #search_field
+    { padding: 0px 5px 0px 5px; }
 }
 /*
 #results_container
@@ -297,7 +301,10 @@ input, #search_field_parent  {
     animation:none !important;
     box-shadow:none;
 }
-#search_field { border:none !important;}
+#search_field {
+    border:none !important;
+    min-width:0px;
+}
 #search_field:hover { background:none; }
 
 #clear {
