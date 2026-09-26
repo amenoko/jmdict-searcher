@@ -32,21 +32,23 @@ body, #search_button, #paste, #clear_paste
 
 /* FONT SIZES */
 body, #search_button
-    { font-size: 14px; }
+{ font-size: 14px; }
 #search_field
-    { font-size: 18px; }
+{ font-size: 18px; }
 #clear_paste, #paste
-    { font-size: 10px; }
+{ font-size: 10px; }
+#clear
+{ font-size: 22px; }
 #status, #results_count
-    { font-size: 12px; }
+{ font-size: 12px; }
 .kanjidic2_kanji
-    { font-size: 20px; }
+{ font-size: 20px; }
 .keb
-    { font-size: 20px; }
+{ font-size: 20px; }
 .k_ele_freq, .k_ele_other, .senses_extras, .kanjidic2_joyo
-    { font-size: 10px; }
+{ font-size: 10px; }
 .senses_german, .senses_german_lead
-    { font-size: 12px; }
+{ font-size: 12px; }
  /*
 .kanjidic2_meanings, .kanjidic2_readings
     { font-size: 13px; }
@@ -77,6 +79,10 @@ body, #search_button
     { padding: 6px 6px 0px 6px; }
 #search_field, #clear
     { padding: 0px 16px 0px 16px; }
+#search_field
+    { margin: -1px; } /* fix weird border in chromium */
+.results_container_column:not(.results_container_column:first-child)
+    { margin-top:6px; }
 .row_container, #greeting
     { padding: 6px; }
 #search_button
