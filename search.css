@@ -305,13 +305,21 @@ input {
 #clear { animation: 1s infinite sweep3; }
 #paste { animation: 1s infinite sweep4; }
 #clear_paste { animation: 1s infinite sweep5; }*/
-
+/*
 @keyframes heartbeat {
     0%,55% { box-shadow: 0px 0px 0px 0px #ffffff44; }
-    22% { box-shadow: 0px 0px 1px 1px #ffffff44; }
     7% {box-shadow: 0px 0px 3px 3px #ffffff44;}
+    22% { box-shadow: 0px 0px 1px 1px #ffffff44; }
     37% {box-shadow: 0px 0px 2px 3px #ffffff44;}
+}*/
+
+@keyframes heartbeat {
+    0%,45%,100% { box-shadow: 0px 0px 0px 0px #ffffff44; }
+    52% {box-shadow: 0px 0px 3px 3px #ffffff44;}
+    67% { box-shadow: 0px 0px 1px 0px #ffffff44; }
+    80% {box-shadow: 0px 0px 3px 3px #ffffff44;}
 }
+
 
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
