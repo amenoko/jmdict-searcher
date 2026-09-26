@@ -50,6 +50,8 @@ function clear_input() {
 let xmlDoc = null;
 // kanjidic2
 let xmlDoc_kanji = null;
+
+// INIT
 async function init() {
     //status_update("Loading JMdict");
     /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
@@ -91,7 +93,7 @@ async function init() {
             console.log("url keywords: " + url_query_search_word);
             //document.getElementById("search_field").value = url_query_search_word;
             await disable_input();
-            await status_update("Searching...");
+            await status_update("Searching");
             searchexec();
         } else {
             focus();
@@ -117,7 +119,7 @@ display_counter=true; //for checking whether result lists are affected by async?
 //queried in the dev console
 results_counter=0;
 
-
+// POST-INIT
 document.addEventListener('DOMContentLoaded', async function () {
 // if reload, disable input
     window.onbeforeunload = disable_input();
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
 
-/* CORE LOGIC */
+// CORE LOGIC / SEARCHER
 async function searchXML(search_word) {
     console.log("exiting early");
     console.log("searchXML begin, search_word = " + search_word);
@@ -469,6 +471,7 @@ async function searchXML(search_word) {
     return new Promise(resolve => setTimeout(resolve, 10));
 }
 
+// SEARCH COMMANDER
 async function searchexec(optional_string, pushstate) {
     if (pushstate == null) { pushstate=true; }
 
@@ -507,7 +510,7 @@ async function searchexec(optional_string, pushstate) {
     if (display_counter) {await results_counter_update(results_counter);}
     search_array= search_field_contents.trim().split(/\s+/);
     document.getElementById("results_container").innerHTML = "";
-    await status_update("Searching...");
+    await status_update("Searching");
     for (let x=0;x<search_array.length;x++) {
         console.log("Calling searchXML(\"" + search_array[x] + "\")");
         if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
@@ -525,49 +528,35 @@ async function searchexec(optional_string, pushstate) {
     console.log("searchexec() end");
 }
 
-function paste() {
-    /*const destination = document.getElementById("outbox");
-    destinationImage.addEventListener("click", () => {
-    navigator.clipboard
-    .readText()
-    .then((clipText) => (destination.innerText = clipText));
-    });*/
+// PASTE LOGIC
+async function paste(replace) {
     navigator.clipboard
     .readText()
         .then((cliptext) => {
-        // if search bar isn't empty, paste content with space
+        // if search bar isn't empty, paste content with space; unless called by clear&paste
         new_search = "";
+        if (replace) { new_search = cliptext; document.getElementById("search_field").value = new_search; }
+        else {
             if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
-            new_search = cliptext;
-            document.getElementById("search_field").value = new_search;
-        } else {
-            new_search = document.getElementById("search_field").value + " " + cliptext;
-            document.getElementById("search_field").value = new_search;
+                new_search = cliptext;
+                document.getElementById("search_field").value = new_search;
+            } else {
+                new_search = document.getElementById("search_field").value + " " + cliptext;
+                document.getElementById("search_field").value = new_search;
+            }
         }
         searchexec(new_search);
     });
 }
 
-function clear_paste() {
-    clear_input();
-    paste();
+// CLEAR, PASTE & GO
+async function clear_paste() {
+    paste(true);
 }
 
+// FORWARD / BACK BUTTON HANDLER
 window.addEventListener('popstate', async function(event) {
     console.log("popstate event");
-    /* document.getElementById("search_field").value = url_query_search_word;
-    if (url_query_search_word) {
-            console.log("url keywords: " + url_query_search_word);
-            //document.getElementById("search_field").value = url_query_search_word;
-            await disable_input();
-            await status_update("Searching...");
-
-        } else {
-            document.getElementById("search_field").focus();
-            await status_update("");
-            results_container = document.getElementById("greeting");
-            results_container.style.setProperty("display", "block");
-    } */
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
     document.getElementById("search_field").value = url_query_search_word;

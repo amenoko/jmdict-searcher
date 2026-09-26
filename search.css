@@ -18,45 +18,149 @@
 body {
     color: var(--fg1);
     background-color: var(--bg1);
-    font-family: BR Wakaisho, brw;
-    font-size: 14px;
     display:flex;
     flex-direction:column;
     height: 100vh;
     margin:0px;
 }
 
+body, #search_button, #paste, #clear_paste
+{ font-family: sans-serif; }
+
+.kanjidic2_kanji, .kanjidic2_readings, .keb, .reb, input#search_field
+{ font-family: BR Wakaisho, brw; }
+
+/* FONT SIZES */
+body, #search_button
+    { font-size: 14px; }
+#search_field
+    { font-size: 18px; }
+#clear_paste, #paste
+    { font-size: 10px; }
+#status, #results_count
+    { font-size: 12px; }
+.kanjidic2_kanji
+    { font-size: 20px; }
+.keb
+    { font-size: 20px; }
+.k_ele_freq, .k_ele_other, .senses_extras, .kanjidic2_joyo
+    { font-size: 10px; }
+.senses_german, .senses_german_lead
+    { font-size: 12px; }
+ /*
+.kanjidic2_meanings, .kanjidic2_readings
+    { font-size: 13px; }
+.kanjidic2_joyo, .kanjidic2_hyougai
+    { font-size: 10px; }
+.reb
+    { font-size: 14px; }
+
+
+#search_button, #paste, #clear_paste, #search_field_parent
+    { font-size: 13px; }
+
+#clear
+    { font-size: 19px; }
+#results_count, #status
+    { font-size: 14px; }
+*/
+@media (max-width: 800px) {
+    #status, #results_count
+        { font-size:11px; }
+    #paste, #clear_paste
+        { font-size:10px; }
+}
+/* FONT SIZES END */
+
+/* MARGINS AND PADDINGS */
+#search_bar, #results_container
+    { padding: 6px 6px 0px 6px; }
+.row_container, #greeting
+    { padding: 6px; }
+#search_button
+    { padding: 6px;}
+/* for horizontal lists, margin-right */
+#search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
+    { margin-right: 6px; }
+.keb, .k_ele_freq, .k_ele_other, .senses_german_lead
+    { margin-right: 5px; }
+.kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
+    { margin-right:8px;}
+/* vertical lists margin-bottom */
+.senses_block_container
+    { margin-bottom: 5px; }
+
+@media (max-width: 800px) {
+    #search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
+        { margin-right:3px; }
+}
+/*
+#results_container
+    { margin: 0px 5px 5px 5px; }
+#greeting
+    { margin: 10px; }
+.no_results
+    { margin: 10px; }
+.results_container_column
+    { margin-top: 6px; }
+.row_container
+    { margin: 0px 5px 0px 5px;
+      padding: 0px 0px 0px 0px; }
+.kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
+    { margin: 0px 10px 0px 0px; }
+.row_container:has(.kanjidic2_kanji)
+    { padding: 0px 0px 0px 0px; }
+.senses_block_container
+    { margin:0px 0px 5px 0px;
+      padding:0px; }
+.senses_block_container:last-child
+    { margin:0px; }
+.senses_container
+    { margin:5px; }
+.senses_german_lead
+    { margin: 0px; }
+.senses_german_lead:first-child
+    { margin: 0px 5px 0px 0px; }
+input, #search_field_parent
+    { padding: 0px 5px 0px 5px; }
+.meanings_readings
+    { margin: 5px 10px 5px 0px;
+      padding:0px; }
+.keb, .k_ele_other, .k_ele_freq
+    { margin-right: 5px; }
+.k_ele_other:last-child, .k_ele_freq:last-child
+    { margin-right: 0px; }
+#search_field
+    { padding-right: 5px; }
+/* MARGINS AND PADDINGS END */
+
 .grey {color:var(--fg2);}
 
-#greeting {display:none;margin:10px;}
+#greeting {display:none;}
 
 a, a:visited {color:var(--accent);text-decoration:none;}
 a:hover {text-decoration:underline;}
 
 .no_results {
     color:var(--fg2);
-    margin:10px;
 }
 
 #results_container {
 display:none;
 flex-direction:column;
 flex-grow:1;
-margin: 0px 5px 5px 5px;
 }
 
 .results_container_column {
     border:solid 1px;
     border-color: var(--accent);
     border-radius:5px;
-    margin-top: 6px;
     flex-grow:1;
 }
 
 .row_container {
     display:flex;
-    margin: 0px 5px 0px 5px;
-    padding: 0px 0px 0px 0px;
+
     border-bottom-style: solid;
     border-width:1px;
     border-color: var(--fg3);
@@ -66,36 +170,15 @@ margin: 0px 5px 5px 5px;
     flex-direction: column;
 }
 
-/* this was needed to account for search bar on mobile
- * but we now have metadata for installing mobile site as
- * app, which removes the address bar, so I think it's fine */
-/* .results_container_column_inside {
-    margin-bottom:400px;
-}*/
-
 /* KANJIDIC2 ENTRY */
 .kanjidic2_kanji, .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
     align-content:center;
     line-height:25px;
-
-}
-.kanjidic2_kanji {
-    font-size: 20px;
-}
-.kanjidic2_meanings {
-    font-size:13px;
 }
 .kanjidic2_readings {
     color: var(--fg2);
-    font-size:13px;
 }
 
-.kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
-{margin: 0px 10px 0px 0px; }
-
-.kanjidic2_joyo, .kanjidic2_hyougai {
-    font-size: 10px;
-}
 .kanjidic2_joyo { color:var(--accent); }
 .kanjidic2_hyougai { color:var(--fg2); }
 
@@ -103,7 +186,6 @@ margin: 0px 5px 5px 5px;
 .row_container:has(.kanjidic2_kanji) {
     border-bottom-color:var(--accent);
     flex-wrap:wrap;
-    padding: 0px 0px 0px 0px;
 }
 
 
@@ -111,9 +193,7 @@ margin: 0px 5px 5px 5px;
 .meanings_readings {
     width: 25%;
     min-width: 25%;
-    font-size:20px;
-    margin: 5px 10px 5px 0px;
-    padding:0px;
+
 }
 /* rebs by default are grey but if there's
  *  no kebs that's ugly */
@@ -122,14 +202,11 @@ margin: 0px 5px 5px 5px;
 }
 .reb {
     color:var(--fg2);
-    font-size: 14px;
 }
 .k_ele_freq, .k_ele_other {
     color:var(--fg2);
-    font-size:10px;
 }
-.keb, .k_ele_other, .k_ele_freq {margin-right:5px;display:inline;}
-.k_ele_other:last-child, .k_ele_freq:last-child {margin-right:0px;}
+.keb, .k_ele_other, .k_ele_freq {display:inline;}
 .k_ele_freq {
     color:var(--accent);
     /*font-weight: bold;*/
@@ -137,52 +214,38 @@ margin: 0px 5px 5px 5px;
 
 .senses_extras {
     color: var(--fg2);
-    font-size: 12px;
 }
 
-.senses_block_container {
-    margin:0px 0px 5px 0px;
-    padding:0px;
-}
-.senses_block_container:last-child {margin:0px;}
 .senses_container {
     display:flex;
     flex-direction:column;
-    margin:5px;
     /*flex-wrap:wrap;*/
 }
 
 .senses_german {
-    font-size: 12px;
     display:inline;
 }
 
 .senses_german_lead {
     color: var(--accent);
     display:inline;
-    font-size: 12px;
-    margin: 0px;
 }
-.senses_german_lead:first-child { margin: 0px 5px 0px 0px; }
 
 /* SEARCH BAR */
 input, #search_field_parent  {
     background-color: var(--bg1);
     color: var(--fg1);
-    padding:0px;
-    font-family: BR Wakaisho;
 }
-input:hover {
+:is(#clear, #search_button, #paste, #clear_paste):hover {
     background-color: var(--bg3);
 }
 
 #search_button, #paste, #clear_paste, #search_field_parent {
-    font-size: 13px;
     border: solid 1px;
     border-color: var(--accent);
     border-radius:4px;
 }
-#clear_paste, #paste { font-size: 11px; white-space:normal; line-height:10px;}
+#clear_paste, #paste { white-space:normal;}
 
 #search_button:active, #paste:active, #clear:active, #clear_paste:active {
     background-color: var(--accent);
@@ -191,7 +254,6 @@ input:hover {
 
 #status {
     text-align:center;
-    padding: 0px 5px 0px 5px;
     animation: status_animation 1s ease infinite;
 }
 @keyframes status_animation {
@@ -208,16 +270,11 @@ input:hover {
 
 }
 
-#search_field_parent, #search_button, #status, #paste, #clear_paste {
-    margin-right:5px;
-}
-
 #search_bar {
     display:flex;
     flex-direction:row;
     align-content:center;
-    padding: 5px 0px 0px 5px;
-    height:28px;
+    height:34px;
 }
 
 #search_button, #paste, #clear_paste {
@@ -233,7 +290,6 @@ input:hover {
     animation: heartbeat 1s infinite;
     box-shadow: none;
 }
-#search_field_parent:hover { background-color: var(--bg2); }
 
 #search_field:disabled, .search_field_parent_disabled, #search_button:disabled, #paste:disabled, #clear:disabled, #clear_paste:disabled {
     border-color: var(--fg2) !important;
@@ -241,7 +297,7 @@ input:hover {
     animation:none !important;
     box-shadow:none;
 }
-#search_field { border:none !important; padding-right:5px;}
+#search_field { border:none !important;}
 #search_field:hover { background:none; }
 
 #clear {
@@ -256,23 +312,15 @@ input:hover {
 }
 
 #results_count, #status {
-    padding: 0px 5px 0px 5px;
     align-content:center;
-    font-size: 14px;
 }
 #results_count {
     flex-grow:1;
     text-align:right;
-    padding: 0px 5px 0px 0px;
-}
-input {
-    padding: 0px 5px 0px 5px;
 }
 
 #clear {
-    padding: 0px 10px 0px 10px;
     color:var(--fg1);
-    font-size:19px;
 }
 
 #clear:active {
@@ -326,10 +374,8 @@ input {
     .k_ele_other, .keb {display:block;}
     body {zoom:95%;}
     .k_ele_container > br {display:none;}
-    #status, #results_count {font-size:11px;}
     #search_bar {height:35px;}
     #search_field, #search_button { max-width:unset; }
     #search_button, #paste { width: 100px; }
-    #paste, #clear_paste { font-size:10px; }
     input:hover { background-color:var(--bg1); }
 }
