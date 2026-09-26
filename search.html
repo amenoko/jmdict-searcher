@@ -31,10 +31,13 @@ async function unfocus() {
 
 async function disable_input(value) {
     if(value == null) { value = true; }
+    if (value) { document.getElementById("search_field_parent").setAttribute("class", "search_field_parent_disabled"); }
+    else       { document.getElementById("search_field_parent").setAttribute("class", ""); }
     document.getElementById("search_field").disabled = value;
     document.getElementById("search_button").disabled = value;
     document.getElementById("paste").disabled = value;
     document.getElementById("clear").disabled = value;
+    document.getElementById("clear_paste").disabled = value;
     return new Promise(resolve => setTimeout(resolve, 0));
 }
 
@@ -61,7 +64,7 @@ async function init() {
         inflateme = new Uint8Array(result);
         inflated = pako.ungzip(inflateme,{ 'to': 'string' });
         xmlDoc = new window.DOMParser().parseFromString(inflated, "text/xml");
-        document.getElementById("search_field").focus();
+        focus();
         console.log("loaded Jmdict");
 
     } catch (error) {
@@ -91,7 +94,7 @@ async function init() {
             await status_update("Searching...");
             searchexec();
         } else {
-            document.getElementById("search_field").focus();
+            focus();
             await status_update("");
             results_container = document.getElementById("greeting");
             results_container.style.setProperty("display", "block");
@@ -461,6 +464,7 @@ async function searchXML(search_word) {
         no_results.textContent = "No results for \"" + search_word + "\"";
         no_results.setAttribute("class", "no_results");
         results_container_column.body.appendChild(no_results);
+        focus();
     }
     return new Promise(resolve => setTimeout(resolve, 10));
 }
@@ -544,6 +548,11 @@ function paste() {
     });
 }
 
+function clear_paste() {
+    clear_input();
+    paste();
+}
+
 window.addEventListener('popstate', async function(event) {
     console.log("popstate event");
     /* document.getElementById("search_field").value = url_query_search_word;
@@ -568,10 +577,13 @@ window.addEventListener('popstate', async function(event) {
     </head>
     <body>
     <div id="search_bar">
-        <input type="text" name="literal" id="search_field" disabled>
+        <div id="search_field_parent" class="search_field_parent_disabled">
+            <input type="text" name="literal" id="search_field" disabled>
+            <input type="submit" value="🞩" onClick="clear_input()" id="clear" disabled>
+        </div>
         <input type="submit" value="Go" onClick="searchexec()" id="search_button" disabled>
-        <input type="submit" value="Paste & Go" onClick="paste()" id="paste" disabled>
-        <input type="submit" value="Clear" onClick="clear_input()" id="clear" disabled>
+        <input type="submit" value="Paste & Go (Add)" onClick="paste()" id="paste" disabled>
+        <input type="submit" value="Paste & Go (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
         <div id="status">Please wait...</div>
         <div id="results_count"></div>
     </div>

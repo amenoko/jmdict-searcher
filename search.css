@@ -166,23 +166,27 @@ margin: 0px 5px 5px 5px;
 .senses_german_lead:first-child { margin: 0px 5px 0px 0px; }
 
 /* SEARCH BAR */
-input  {
+input, #search_field_parent  {
     background-color: var(--bg1);
     color: var(--fg1);
-    border: solid 1px;
     padding:0px;
-    border-color: var(--accent);
-    border-radius:5px;
     font-family: BR Wakaisho;
-    font-size:14px;
 }
 input:hover {
     background-color: var(--bg3);
 }
 
-#search_button:active, #paste:active, #clear:active {
+#search_button, #paste, #clear_paste, #search_field_parent {
+    font-size: 13px;
+    border: solid 1px;
+    border-color: var(--accent);
+    border-radius:4px;
+}
+#clear_paste, #paste { font-size: 11px; white-space:normal; line-height:10px;}
+
+#search_button:active, #paste:active, #clear:active, #clear_paste:active {
     background-color: var(--accent);
-    color:black;
+    color:var(--bg1);
 }
 
 #status {
@@ -199,12 +203,12 @@ input:hover {
     opacity:1;
 }
 
-#search_field, #search_button, #paste, #clear {
+#search_field, #search_button, #paste, #clear_paste {
     flex-grow:1;
 
 }
 
-#search_field, #search_button, #status, #paste, #clear {
+#search_field_parent, #search_button, #status, #paste, #clear_paste {
     margin-right:5px;
 }
 
@@ -216,21 +220,36 @@ input:hover {
     height:28px;
 }
 
-#search_button, #paste, #clear {
+#search_button, #paste, #clear_paste {
     align-content:center;
     max-width:90px;
 }
-#search_field {
+#search_field_parent {
     min-width:0px;
-    align-content:center;
     flex-grow:1;
-    max-width:300px;
+    display:flex;
+    flex-direction:row;
+    overflow:hidden;
 }
+#search_field_parent:hover { background-color: var(--bg2); }
 
-#search_field:disabled, #search_button:disabled, #paste:disabled, #clear:disabled {
-    border-color: var(--fg2);
-    color: var(--fg2);
+#search_field:disabled, .search_field_parent_disabled, #search_button:disabled, #paste:disabled, #clear:disabled, #clear_paste:disabled {
+    border-color: var(--fg2) !important;
+    color: var(--fg2) !important;
     animation:none;
+}
+#search_field { border:none !important; padding-right:5px;}
+#search_field:hover { background:none; }
+
+#clear {
+    /*border-left-style: solid;
+    border-right-style: none;
+    border-top-style: none;
+    border-bottom-style: none; */
+    border:none;
+    border-width: 1px;
+    border-color: var(--accent);
+    border-radius:0px;
 }
 
 #results_count, #status {
@@ -247,26 +266,42 @@ input {
     padding: 0px 5px 0px 5px;
 }
 
+#clear {
+    padding: 0px 10px 0px 10px;
+    color:var(--fg1);
+    font-size:19px;
+}
+
+#clear:active {
+    background-color:red;
+    border:none;
+}
+
 @keyframes sweep1 {
     0%,10%,40%,100% { border-color: var(--accent); }
     25% { border-color:white;}
 }
 @keyframes sweep2 {
-    0%,14%,29%,44% { border-color: var(--accent); }
+    0%,14%,44%,100% { border-color: var(--accent); }
     29% { border-color:white;}
 }
 @keyframes sweep3 {
-    0%,18%,47%,100% { border-color: var(--accent); }
-    32% { border-color:white;}
+    0%,18%,48%,100% { border-color: var(--accent); }
+    33% { border-color:white;}
 }
 @keyframes sweep4 {
-    0%,20%,40%,100% { border-color: var(--accent); }
-    35% { border-color:white;}
+    0%,22%,52%,100% { border-color: var(--accent); }
+    37% { border-color:white;}
 }
+@keyframes sweep5 {
+    0%,26%,56%,100% { border-color: var(--accent); }
+    41% { border-color:white;}
+}/*
 #search_field { animation: 1s infinite sweep1; }
 #search_button { animation: 1s infinite sweep2; }
-#paste { animation: 1s infinite sweep3; }
-#clear {animation: 1s infinite sweep4; }
+#clear { animation: 1s infinite sweep3; }
+#paste { animation: 1s infinite sweep4; }
+#clear_paste { animation: 1s infinite sweep5; }*/
 
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
@@ -275,8 +310,8 @@ input {
     .k_ele_container > br {display:none;}
     #status, #results_count {font-size:11px;}
     #search_bar {height:35px;}
-    #search_field, #search_button, #clear { max-width:unset; }
-    #search_button, #clear, #paste { width: 100px; }
-    #paste { font-size:9px; white-space: normal;}
+    #search_field, #search_button { max-width:unset; }
+    #search_button, #paste { width: 100px; }
+    #paste, #clear_paste { font-size:10px; }
     input:hover { background-color:var(--bg1); }
 }
