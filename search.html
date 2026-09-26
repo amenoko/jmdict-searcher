@@ -238,7 +238,7 @@ async function searchXML(search_word) {
                 for (let o=0;o < kanji_readings.length;o++) {
                     // skip if foreign language
                     if (kanji_readings[o].getAttribute("r_type") == null || kanji_readings[o].getAttribute("r_type").match(/^$|ja_on|ja_kun/)) {
-                        new_html_element.textContent +=  kanji_readings[o].textContent + ", ";
+                        new_html_element.textContent +=  kanji_readings[o].textContent + "・";
 
                         // to check whether we're at the last (viable) item
                         // (o alone isn't useful since the last items are foreign and skipped)
@@ -246,7 +246,7 @@ async function searchXML(search_word) {
                         //else {new_html_element.textContent += ", ";}
                     }
                 }
-                new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
+                new_html_element.textContent = new_html_element.textContent.slice(0,-1); // trailing "・"
                 new_html_element.setAttribute("class", "kanjidic2_readings");
                 row_container.appendChild(new_html_element);
 

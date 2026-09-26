@@ -230,13 +230,16 @@ input:hover {
     display:flex;
     flex-direction:row;
     overflow:hidden;
+    animation: heartbeat 1s infinite;
+    box-shadow: none;
 }
 #search_field_parent:hover { background-color: var(--bg2); }
 
 #search_field:disabled, .search_field_parent_disabled, #search_button:disabled, #paste:disabled, #clear:disabled, #clear_paste:disabled {
     border-color: var(--fg2) !important;
     color: var(--fg2) !important;
-    animation:none;
+    animation:none !important;
+    box-shadow:none;
 }
 #search_field { border:none !important; padding-right:5px;}
 #search_field:hover { background:none; }
@@ -302,6 +305,13 @@ input {
 #clear { animation: 1s infinite sweep3; }
 #paste { animation: 1s infinite sweep4; }
 #clear_paste { animation: 1s infinite sweep5; }*/
+
+@keyframes heartbeat {
+    0%,55% { box-shadow: 0px 0px 0px 0px #ffffff44; }
+    22% { box-shadow: 0px 0px 1px 1px #ffffff44; }
+    7% {box-shadow: 0px 0px 3px 3px #ffffff44;}
+    37% {box-shadow: 0px 0px 2px 3px #ffffff44;}
+}
 
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
