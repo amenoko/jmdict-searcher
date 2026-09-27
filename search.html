@@ -245,6 +245,9 @@ async function searchXML(search_word) {
         console.log(window.frameElement.tagName);
         console.log(window.frameElement.getAttribute("iframe_counter"));
      });*/
+    results_container_column.addEventListener('keydown', (e) => {
+        if (e.key.match(/[a-zA-Z ]/) != null) { focus(); }
+    });
 
 
 
@@ -657,6 +660,12 @@ window.addEventListener('popstate', async function(event) {
     url_query_search_word = url_query_params.get('q');
     document.getElementById("search_field").value = url_query_search_word;
     searchexec(url_query_search_word, false); // do not push state
+});
+
+
+window.addEventListener('keydown', (e) => {
+    console.log("keydown:" + e.key);
+    if (e.key.match(/[a-zA-Z ]/) != null) { focus(); }
 });
         </script>
     </head>
