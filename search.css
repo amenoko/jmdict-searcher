@@ -38,7 +38,7 @@ body, #search_button
 #clear_paste, #paste
 { font-size: 10px; }
 #clear
-{ font-size: 22px; }
+{ font-size: 14px; }
 #status, #results_count
 { font-size: 12px; }
 .kanjidic2_kanji
@@ -389,6 +389,6 @@ input, #search_field_parent  {
     .k_ele_container > br {display:none;}
     #search_bar {height:35px;}
     #search_field, #search_button { max-width:unset; }
-    #search_button, #paste { width: 100px; }
+    #search_button, #paste, #clear_paste { width: 110px; }
     input:hover { background-color:var(--bg1); }
 }
