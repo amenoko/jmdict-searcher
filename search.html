@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 }, false);
 
-
+//iframe_counter = 0; // for self-identification
 
 // CORE LOGIC / SEARCHER
 async function searchXML(search_word) {
@@ -179,6 +179,14 @@ async function searchXML(search_word) {
     link.href = "search.css";
     results_container_column.head.appendChild(link);
     results_container_column.body.setAttribute("class","results_container_column_inside");
+    /*
+    iframe_counter += 1;
+    new_iframe.setAttribute("iframe_counter",iframe_counter);
+    results_container_column.addEventListener('scroll', (event) => {
+        console.log(new_iframe.contentWindow.scrollY);
+        console.log(window.frameElement.tagName);
+        console.log(window.frameElement.getAttribute("iframe_counter"));
+     });*/
 
 
 
@@ -511,12 +519,18 @@ async function searchexec(optional_string, pushstate) {
     search_array= search_field_contents.trim().split(/\s+/);
     document.getElementById("results_container").innerHTML = "";
     await status_update("Searching");
+    document.getElementsByTagName("title")[0].textContent = "";
     for (let x=0;x<search_array.length;x++) {
         console.log("Calling searchXML(\"" + search_array[x] + "\")");
         if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
             /* setTimeout(function() {
             searchXML(search_array[x]);
             }, 100); */
+            if (x == 0) {
+                document.getElementsByTagName("title")[0].textContent += search_array[x];
+            } else {
+                document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
+            }
             await searchXML(search_array[x]);
             await disable_input(false);
             if (display_counter) {await results_counter_update(results_counter);}

@@ -20,8 +20,9 @@ body {
     background-color: var(--bg1);
     display:flex;
     flex-direction:column;
-    height: 100vh;
+    height: 100dvh;
     margin:0px;
+    -webkit-text-size-adjust: none;
 }
 
 body, #search_button, #paste, #clear_paste
@@ -49,30 +50,26 @@ body, #search_button
 { font-size: 10px; }
 .senses_german, .senses_german_lead
 { font-size: 12px; }
- /*
-.kanjidic2_meanings, .kanjidic2_readings
-    { font-size: 13px; }
-.kanjidic2_joyo, .kanjidic2_hyougai
-    { font-size: 10px; }
-.reb
-    { font-size: 14px; }
 
-
-#search_button, #paste, #clear_paste, #search_field_parent
-    { font-size: 13px; }
-
-#clear
-    { font-size: 19px; }
-#results_count, #status
-    { font-size: 14px; }
-*/
 @media (max-width: 800px) {
-    #status, #results_count
-        { font-size:10px; }
-    #paste, #clear_paste
-        { font-size:10px; }
+    body, #search_button
+    { font-size: 18px; }
     #search_field
-        { font-size: 16px; }
+    { font-size: 24px; }
+    #clear_paste, #paste
+    { font-size: 12px; }
+    #clear
+    { font-size: 14px; }
+    #status, #results_count
+    { font-size: 14px; }
+    .kanjidic2_kanji
+    { font-size: 24px; }
+    .keb
+    { font-size: 24px; }
+    .k_ele_freq, .k_ele_other, .senses_extras, .kanjidic2_joyo
+    { font-size: 14px; }
+    .senses_german, .senses_german_lead
+    { font-size: 14px; }
 }
 /* FONT SIZES END */
 
@@ -246,6 +243,14 @@ flex-grow:1;
 }
 
 /* SEARCH BAR */
+/* artificial autohide
+.search_bar_visible {
+    opacity: 1;
+}
+.search_bar_hidden {
+    transform: translateY(-100);
+} */
+
 input, #search_field_parent  {
     background-color: var(--bg1);
     color: var(--fg1);
@@ -389,10 +394,9 @@ input, #search_field_parent  {
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
     .k_ele_other, .keb {display:block;}
-    body {zoom:95%;}
     .k_ele_container > br {display:none;}
-    #search_bar {height:35px;}
+    #search_bar {height:54px;}
     #search_field, #search_button { max-width:unset; }
-    #search_button, #paste, #clear_paste { width: 120px; }
+    #search_button, #paste, #clear_paste { width: 190px; }
     input:hover { background-color:var(--bg1); }
 }
