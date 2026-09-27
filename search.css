@@ -104,7 +104,9 @@ body, #search_button
     #search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
         { margin-right:3px; }
     #search_field
-    { padding: 0px 5px 0px 5px; }
+        { padding: 0px 5px 0px 5px; }
+    #paste, #clear_paste
+        { padding: 2px; }
 }
 /*
 #results_container
