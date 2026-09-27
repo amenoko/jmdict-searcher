@@ -8,6 +8,65 @@
         <link href="search.css" rel="stylesheet" />
         <script src="pako.min.js"></script>
         <script language="JavaScript" type="text/javascript">
+
+// conversion table
+hiratable = ["しょ","しぇ","しゅ","しゃ","ちょ","ちぇ","ちゅ","ちゃ","じょ","じぇ","じゅ","じゃ","りょ","りゅ","りゃ","みょ","みゅ","みゃ","ひょ","ひゅ","ひゃ","にょ","にゅ","にゃ","ぎょ","ぎゅ","ぎゃ","きょ","きゅ","きゃ","ぞ","ぜ","ず","じ","じ","ざ","ど","で","づ","ぢ","だ","ご","げ","ぐ","ぎ","が","を","わ","ろ","れ","る","り","ら","よ","ゆ","や","も","め","む","み","ま","ほ","へ","ふ","ふ","ひ","は","の","ね","ぬ","に","な","と","て","つ","つ","ち","ち","た","そ","せ","す","し","し","さ","こ","け","く","き","か","お","え","う","い","あ","ん","ん"];
+romatable = ["sho","she","shu","sha","cho","che","chu","cha","jo","je","ju","ja","ryo","ryu","rya","myo","myu","mya","hyo","hyu","hya","nyo","nyu","nya","gyo","gyu","gya","kyo","kyu","kya","zo","ze","zu","zi","ji","za","do","de","dzu","dji","da","go","ge","gu","gi","ga","wo","wa","ro","re","ru","ri","ra","yo","yu","ya","mo","me","mu","mi","ma","ho","he","hu","fu","hi","ha","no","ne","nu","ni","na","to","te","tu","tsu","ti","chi","ta","so","se","su","si","shi","sa","ko","ke","ku","ki","ka","o","e","u","i","a","nn","n"];
+function roma_to_hira(input) {
+    output = "";
+    input_string = input;
+    while (input_string.length > 0) {
+        piece_matched=false;
+        if (input_string == "") {
+                console.log("roma_to_hira(): return " + output);
+                return output;
+        }
+
+        for (let r=0;r<romatable.length;r++) {
+            if (input_string.slice(0,3) == romatable[r]) {
+                console.log(input_string.slice(0,3) + " matches " + romatable[r]);
+                output += hiratable[r];
+                console.log("output = " + output);
+                input_string = input_string.slice(3);
+                piece_matched = true;
+                r=romatable.length; // break out of this for loop
+            }
+        }
+        if (!piece_matched) {
+            for (let r=0;r<romatable.length;r++) {
+                if (input_string.slice(0,2) == romatable[r]) {
+                    console.log(input_string.slice(0,2) + " matches " + romatable[r]);
+                    output += hiratable[r];
+                    input_string = input_string.slice(2);
+                    piece_matched = true;
+                    r=romatable.length;
+                }
+            }
+        }
+
+        if (!piece_matched) {
+            for (let r=0;r<romatable.length;r++) {
+                if (input_string.slice(0,1) == romatable[r]) {
+                    console.log(input_string.slice(0,1) + " matches " + romatable[r]);
+                    output += hiratable[r];
+                    input_string = input_string.slice(1);
+                    piece_matched = true;
+                    r=romatable.length;
+                }
+            }
+        }
+
+
+
+        if (!piece_matched) {
+            output += input_string[0];
+            input_string = input_string.slice(1);
+        }
+    }
+    return output;
+}
+
+
 async function status_update(text) {
     widget = document.getElementById("status");
     if (text == "") {
@@ -137,7 +196,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     new_html_element.textContent = "last update: " + modified;
     new_html_element.setAttribute("class", "grey");
     document.getElementById("greeting").appendChild(new_html_element);
-
 }, false);
 
 //iframe_counter = 0; // for self-identification
@@ -271,6 +329,7 @@ async function searchXML(search_word) {
     row_prio_container.setAttribute("class", "row_prio_container");
     results_container_column.body.appendChild(row_prio_container);
 
+    results_tally=0; // for exiting when too many results
     // jmdict query
     for (let i=0;i < entries.length;i++) {
         found=false;
@@ -463,10 +522,24 @@ async function searchXML(search_word) {
             else if (priority == 2) { row_prio_container.appendChild(row_container); }
             else if (priority == 3) { row_prio_container.before(row_container); }
             else { results_container_column.body.appendChild(row_container); }
+
+            results_tally++;
+            if (results_tally > 499) {
+                console.log("too many results, aborting (" + results_tally + ")");
+                i=entries.length;
+            }
         } // if (found)
 
     }// jmdict main for-loop
     new_iframe.style.setProperty("display", "block");
+
+    // inform user that search was cut off due to too many results
+    if (results_tally > 499) {
+        toomanyresults = results_container_column.createElement("div");
+        toomanyresults.setAttribute("class", "no_results"); // reuse
+        toomanyresults.textContent = "Search was stopped at 500 results";
+        results_container_column.body.children[0].before(toomanyresults);
+    }
 
     console.log("results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
     if(results_container_column.body.childElementCount < 2 && row_prio_container.childElementCount == 0) {
@@ -506,6 +579,12 @@ async function searchexec(optional_string, pushstate) {
         return;
     }
 
+    if(search_field_contents.match(/[a-zA-Z]/g) != null) {
+        console.log("searchexec(): attempting to convert to hiragana");
+        search_field_contents = roma_to_hira(search_field_contents);
+        document.getElementById("search_field").value = search_field_contents;
+    }
+
     results_counter=0;
     await disable_input(true);
     await unfocus();
@@ -536,7 +615,7 @@ async function searchexec(optional_string, pushstate) {
             if (display_counter) {await results_counter_update(results_counter);}
         }
     }
-    //focus();
+    if (window.innerWidth > 800) { focus(); }
     await status_update("");
     //document.getElementById("search_field").focus(); annoying on mobile, as it turns out
     console.log("searchexec() end");
