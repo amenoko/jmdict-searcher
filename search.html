@@ -22,14 +22,24 @@ function roma_to_hira(input) {
                 return output;
         }
 
-        for (let r=0;r<romatable.length;r++) {
-            if (input_string.slice(0,3) == romatable[r]) {
-                console.log(input_string.slice(0,3) + " matches " + romatable[r]);
-                output += hiratable[r];
-                console.log("output = " + output);
-                input_string = input_string.slice(3);
-                piece_matched = true;
-                r=romatable.length; // break out of this for loop
+        //double consonants
+        if(input_string[0] == input_string[1]) {
+            output += "っ";
+            input_string = input_string.slice(1);
+            piece_matched=true;
+        }
+
+
+        if (!piece_matched) {
+            for (let r=0;r<romatable.length;r++) {
+                if (input_string.slice(0,3) == romatable[r]) {
+                    console.log(input_string.slice(0,3) + " matches " + romatable[r]);
+                    output += hiratable[r];
+                    console.log("output = " + output);
+                    input_string = input_string.slice(3);
+                    piece_matched = true;
+                    r=romatable.length; // break out of this for loop
+                }
             }
         }
         if (!piece_matched) {
