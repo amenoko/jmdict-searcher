@@ -71,6 +71,8 @@ body, #search_button
         { font-size:10px; }
     #paste, #clear_paste
         { font-size:10px; }
+    #search_field
+        { font-size: 16px; }
 }
 /* FONT SIZES END */
 
@@ -389,6 +391,6 @@ input, #search_field_parent  {
     .k_ele_container > br {display:none;}
     #search_bar {height:35px;}
     #search_field, #search_button { max-width:unset; }
-    #search_button, #paste, #clear_paste { width: 110px; }
+    #search_button, #paste, #clear_paste { width: 120px; }
     input:hover { background-color:var(--bg1); }
 }
