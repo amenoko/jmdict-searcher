@@ -300,9 +300,6 @@ async function searchXML(search_word) {
                 row_container = results_container_column.createElement("div");
                 row_container.setAttribute("class","row_container");
 
-
-                // add one child for kanji character, one child for meanings+readings
-                // (to be able to style kanji character separately)
                 new_html_element = results_container_column.createElement("div");
                 new_html_element.setAttribute("class","kanjidic2_kanji");
                 new_html_element.textContent = kanji_literal + "";
@@ -322,6 +319,12 @@ async function searchXML(search_word) {
                     joyo_html_element.setAttribute("class", "kanjidic2_hyougai");
                 }
 
+                // make one container for meanings and readings to allow them to line break
+                // and not take up extra space
+                mr_container = results_container_column.createElement("div");
+                mr_container.setAttribute("class", "kanjidic2_mr_container");
+                row_container.appendChild(mr_container);
+
                 // meanings
                 kanji_meanings = characters[p].getElementsByTagName("meaning");
                 new_html_element = results_container_column.createElement("div");
@@ -331,7 +334,7 @@ async function searchXML(search_word) {
                 }
                 new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
                 new_html_element.setAttribute("class", "kanjidic2_meanings");
-                row_container.appendChild(new_html_element);
+                mr_container.appendChild(new_html_element);
 
                 // readings
                 kanji_readings = characters[p].getElementsByTagName("reading");
@@ -349,9 +352,9 @@ async function searchXML(search_word) {
                 }
                 new_html_element.textContent = new_html_element.textContent.slice(0,-1); // trailing "・"
                 new_html_element.setAttribute("class", "kanjidic2_readings");
-                row_container.appendChild(new_html_element);
+                mr_container.appendChild(new_html_element);
 
-                if (grade != null) { row_container.appendChild(joyo_html_element); }
+                if (grade != null) { mr_container.appendChild(joyo_html_element); }
                 results_container_column.body.appendChild(row_container);
             }
         } // end of kanjidic2 query loop
