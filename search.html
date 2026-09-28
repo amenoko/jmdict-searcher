@@ -225,8 +225,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 //iframe_counter = 0; // for self-identification
 
 // CORE LOGIC / SEARCHER
-async function searchXML(search_word) {
-    console.log("exiting early");
+async function searchXML(search_word, display_search_term_header) {
     console.log("searchXML begin, search_word = " + search_word);
     results_container = document.getElementById("results_container");
     results_container.style.setProperty("display", "flex");
@@ -282,7 +281,6 @@ async function searchXML(search_word) {
     });
 
 
-
     // kanjidic2 query
     found_kanji=false;
     if (search_word.length < 10) {
@@ -304,6 +302,7 @@ async function searchXML(search_word) {
                 new_html_element.setAttribute("class","kanjidic2_kanji");
                 new_html_element.textContent = kanji_literal + "";
                 row_container.appendChild(new_html_element);
+                add_clipboard_event(new_html_element);
 
                 // joyo display
                 joyo_html_element = results_container_column.createElement("div");
@@ -335,6 +334,7 @@ async function searchXML(search_word) {
                 new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
                 new_html_element.setAttribute("class", "kanjidic2_meanings");
                 mr_container.appendChild(new_html_element);
+                add_clipboard_event(new_html_element);
 
                 // readings
                 kanji_readings = characters[p].getElementsByTagName("reading");
@@ -583,7 +583,10 @@ async function searchXML(search_word) {
 
             if (display_counter) { await results_counter_update(results_counter); }
 
-            if(has_freq_tag) { priority++; }
+            if(has_freq_tag) {
+                if(kanaless_match) { priority += 2; }
+                else { priority++; }
+            }
 
             row_container.setAttribute("priority", priority);
 
@@ -603,9 +606,9 @@ async function searchXML(search_word) {
                 }
             }
 
-        } // if (found)
+        } // end of if (found)
 
-    }// jmdict main for-loop
+    }// end of jmdict main for-loop
     if (display_counter) { await results_counter_update(results_counter); }
     new_iframe.style.setProperty("display", "block");
 
@@ -629,6 +632,16 @@ async function searchXML(search_word) {
         results_container_column.body.appendChild(no_results);
         focus();
     }
+
+    // if there are multiple searches, display search term
+    // at the top
+    if(display_search_term_header) {
+        header = results_container_column.createElement("div");
+        header.setAttribute("class", "search_term_header");
+        header.textContent = search_word;
+        results_container_column.body.children[0].before(header);
+    }
+
     return new Promise(resolve => setTimeout(resolve, 10));
 }
 
@@ -679,6 +692,8 @@ async function searchexec(optional_string, pushstate) {
     document.getElementById("results_container").innerHTML = "";
     await status_update("Searching");
     document.getElementsByTagName("title")[0].textContent = "";
+    if(search_array.length > 1) { multisearch=true; } else { multisearch=false; }
+
     for (let x=0;x<search_array.length;x++) {
         console.log("Calling searchXML(\"" + search_array[x] + "\")");
         if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
@@ -690,7 +705,7 @@ async function searchexec(optional_string, pushstate) {
             } else {
                 document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
             }
-            await searchXML(search_array[x]);
+            await searchXML(search_array[x], multisearch);
             await disable_input(false);
             if (display_counter) {await results_counter_update(results_counter);}
         }
@@ -736,7 +751,7 @@ window.addEventListener('popstate', async function(event) {
     searchexec(url_query_search_word, false); // do not push state
 });
 
-
+// FOCUS SEARCHBAR ON KEYPRESS
 window.addEventListener('keydown', (e) => {
         let x = e.key;
         if (x.match(/[a-zA-Z ]/) != null
@@ -748,9 +763,43 @@ window.addEventListener('keydown', (e) => {
             && x != "PageUp"
             ) { console.log("focusing search field"); focus(); }
 });
+
+// copy to clipboard from eventhandler
+function clipboard(text) {
+    navigator.clipboard.writeText(text);
+    console.log("copy to clipboard: " + text);
+}
+
+// ADD CLIPBOARD FUNCTIONALITY
+function add_clipboard_event(element) {
+    console.log("add_clipboard_event(): " + element.textContent);
+
+    element.addEventListener("click", (event) => {
+        navigator.clipboard.writeText(event.target.textContent);
+        console.log("clipboard: " + event.target.textContent);
+        notification("Copied to clipboard: " + event.target.textContent, event.pageX, event.pageY);
+    });
+
+
+}
+
+// NOTIFICATION TOAST
+function notification(text, x,y) {
+    notify_ele = document.getElementById("notification");
+    notify_container = document.getElementById("notification_container");
+    notify_ele.textContent = text;
+    //notify_ele.style.setProperty("left", x + "px");
+    //notify_ele.style.setProperty("top", y + "px");
+    notify_container.style.setProperty("display", "flex");
+    setTimeout(() => notify_container.style.setProperty("display", "none"), 2100);
+    console.log("notification(): " + text);
+}
         </script>
     </head>
     <body>
+    <div id="notification_container">
+        <div id="notification">Notification here</div>
+    </div>
     <div id="search_bar">
         <div id="search_field_parent" class="search_field_parent_disabled">
             <input type="text" name="literal" id="search_field" disabled>

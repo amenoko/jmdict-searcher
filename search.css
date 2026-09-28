@@ -28,13 +28,15 @@ body {
 body, #search_button, #paste, #clear_paste
 { font-family: sans-serif; }
 
-.kanjidic2_kanji, .kanjidic2_readings, .keb, .reb, input#search_field
+.kanjidic2_kanji, .kanjidic2_readings, .keb, .reb,
+.reb_white, input#search_field, .search_term_header、
+#notification
 { font-family: BR Wakaisho, brw; }
 
 /* FONT SIZES */
 body, #search_button
 { font-size: 14px; }
-#search_field
+#search_field, .search_term_header, .reb_white, #notification
 { font-size: 18px; }
 #clear_paste, #paste
 { font-size: 10px; }
@@ -42,15 +44,13 @@ body, #search_button
 { font-size: 14px; }
 #status, #results_count
 { font-size: 12px; }
-.kanjidic2_kanji
-{ font-size: 20px; }
-.keb
-{ font-size: 20px; }
+.kanjidic2_kanji, .keb
+{ font-size: 22px; }
 .k_ele_freq, .k_ele_other,
 .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
 { font-size: 10px; }
-.senses_german, .senses_german_lead, .senses_extras,
-.kanjidic2_meanings, .kanjidic2_readings
+.reb, .senses_german, .senses_german_lead,
+.senses_extras, .kanjidic2_meanings, .kanjidic2_readings
 { font-size: 12px; }
 
 @media (max-width: 800px) {
@@ -64,15 +64,11 @@ body, #search_button
     { font-size: 14px; }
     #status, #results_count
     { font-size: 12px; }
-    .kanjidic2_kanji
-    { font-size: 20px; }
-    .keb
-    { font-size: 20px; }
     .k_ele_freq, .k_ele_other, 
     .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
     { font-size: 10px; }
-    .senses_german, .senses_german_lead, .senses_extras,
-    .kanjidic2_meanings, .kanjidic2_readings
+    .reb, .senses_german, .senses_german_lead,
+    .senses_extras, .kanjidic2_meanings, .kanjidic2_readings
     { font-size: 12px; }
 }
 /* FONT SIZES END */
@@ -84,8 +80,10 @@ body, #search_button
     { padding: 0px 16px 0px 16px; }
 #search_field
     { margin: -1px; } /* fix weird border in chromium */
+#notification
+    { padding: 10px 15px 10px 15px; }
 .no_results
-    { margin: 10px; }
+    { margin: 5px; }
 .results_container_column:not(.results_container_column:first-child)
     { margin-top:6px; }
 .row_container, #greeting
@@ -151,6 +149,47 @@ input, #search_field_parent
     { padding-right: 5px; }
 /* MARGINS AND PADDINGS END */
 
+#notification_container {
+    position:fixed;
+    width:100%;
+    top: 80px;
+    display:none;
+    transition: all 0.5s;
+}
+
+#notification {
+    color: var(--fg1);
+    background-color: var(--bg1) !important;
+    border-color: var(--accent) !important;
+    border-radius: 4px;
+    box-shadow: 0px 0px 15px 0px black;
+    margin-left:auto;
+    margin-right:auto;
+    border:1px solid;
+    opacity:0;
+    font-family: BR Wakaisho, brw;
+    animation: notif_fadeout 2s ease-out;
+}
+
+@keyframes notif_fadeout {
+    0%, 50% { opacity:1; }
+    100% { opacity:0; }
+}
+
+
+.search_term_header {
+    text-align:center;
+    color:var(--accent);
+    position:fixed;
+    top:5px;
+    right:5px;
+    transition: all 0.1s ease-out;
+}
+
+.search_term_header:hover {
+    opacity:0;
+}
+
 .grey {color:var(--fg2);}
 
 #greeting {display:none;}
@@ -192,7 +231,6 @@ flex-grow:1;
 { align-content: center; }
 .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
     display:inline;
-    line-height: 20px;
 }
 .kanjidic2_readings {
     color: var(--fg2);
@@ -204,7 +242,6 @@ flex-grow:1;
 
 .row_container:has(.kanjidic2_kanji) {
     border-bottom-color:var(--accent);
-    flex-wrap:wrap;
 }
 
 
@@ -262,9 +299,11 @@ flex-grow:1;
 input, #search_field_parent  {
     background-color: var(--bg1);
     color: var(--fg1);
+    transition: all 0.5 ease;
 }
 :is(#clear, #search_button, #paste, #clear_paste):hover {
     background-color: var(--bg3);
+    color:white;
 }
 
 #search_button, #paste, #clear_paste, #search_field_parent {
@@ -276,7 +315,7 @@ input, #search_field_parent  {
 
 #search_button:active, #paste:active, #clear:active, #clear_paste:active {
     background-color: var(--accent);
-    color:var(--bg1);
+    color:white;
 }
 
 #status {
@@ -407,6 +446,23 @@ input, #search_field_parent  {
     #search_field, #search_button { max-width:unset; }
     #search_button, #paste, #clear_paste { width: 190px; }
     input:hover { background-color:var(--bg1); }
-    .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai
-    { line-height: 16px; }
+    /*.kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai
+    { line-height: 16px; }*/
+}
+
+@media (min-width: 1400px) {
+    .results_container_column, .results_container_column:not(.results_container_column:first-child){
+        margin: 0px;
+        min-width: 49%;
+        /* max-width: 49%; */
+        /* width: 50%; */
+        /* align-content: center; */
+        flex-grow: 1;
+    }
+
+    #results_container {
+    flex-direction:row-reverse;
+    flex-wrap:wrap;
+    margin:0px;
+    }
 }
