@@ -80,6 +80,8 @@ body, #search_button
     { padding: 0px 16px 0px 16px; }
 #search_field
     { margin: -1px; } /* fix weird border in chromium */
+.no_results
+    { margin: 10px; }
 .results_container_column:not(.results_container_column:first-child)
     { margin-top:6px; }
 .row_container, #greeting

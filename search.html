@@ -76,6 +76,20 @@ function roma_to_hira(input) {
     return output;
 }
 
+function strip_kana(input_string) {
+    /*if (input_string == null || input_string == "" || input_string.match(/^ *$/) != null) {
+        console.log("strip_kana(): null or empty input, quitting");
+        return;
+    }*/
+    input_stripped = "";
+    if(input_string.match(/\p{Script=Han}/gu) != null) {
+        input_stripped_array = input_string.match(/\p{Script=Han}*/gu);
+        for (s=0;s<input_stripped_array.length;s++) {
+            input_stripped += input_stripped_array[s];
+        }
+    }
+    return input_stripped;
+}
 
 async function status_update(text) {
     widget = document.getElementById("status");
@@ -256,7 +270,15 @@ async function searchXML(search_word) {
         console.log(window.frameElement.getAttribute("iframe_counter"));
      });*/
     results_container_column.addEventListener('keydown', (e) => {
-        if (e.key.match(/[a-zA-Z ]/) != null) { focus(); }
+        let x = e.key;
+        if (x.match(/[a-zA-Z ]/) != null
+            && x != "ArrowUp"
+            && x != "ArrowDown"
+            && x != "Home"
+            && x != "End"
+            && x != "PageDown"
+            && x != "PageUp"
+            ) { console.log("focusing search field"); focus(); }
     });
 
 
@@ -264,9 +286,7 @@ async function searchXML(search_word) {
     // kanjidic2 query
     found_kanji=false;
     if (search_word.length < 10) {
-        console.log("attempting kanji stuff");
         characters=xmlDoc_kanji.getElementsByTagName("character");
-        console.log("characters.length: " + characters.length);
         for (let p=0;p < characters.length;p++) {
             found_kanji=false
             // each <character> has only 1 <literal> entry (I checked)
@@ -343,30 +363,61 @@ async function searchXML(search_word) {
     results_container_column.body.appendChild(row_prio_container);
 
     results_tally=0; // for exiting when too many results
+    discarded=0; // keeping track of how many results had to be discarded after 500
     // jmdict query
     for (let i=0;i < entries.length;i++) {
         found=false;
         priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
+        // priority is additive, 2 points for exact matches, 1 point for frequency tag,
+        // 1 point for kana-less match
+
+        exact_keb_match=false;
+        exact_reb_match=false;
 
         kebs=entries[i].getElementsByTagName("keb");
         for (let element of kebs) {
             if(element.textContent.includes(search_word)) {
                 found=true;
-                break;
+                if (element.textContent == search_word) {
+                    console.log("exact keb match:" + element.textContent);
+                    exact_keb_match=true;
+                }
             }
         }
         rebs=entries[i].getElementsByTagName("reb");
         for (let element of rebs) {
             if(element.textContent.includes(search_word)) {
                 found=true;
-                // bit hacky to do it here like this but whatever
-                if(element.textContent == search_word) { priority=3; }
-                break;
+                if (element.textContent == search_word) {
+                    console.log("exact reb match" + element.textContent);
+                    exact_reb_match=true;
+                }
+            }
+        }
+        // kana-less match
+        kanaless_match = false;
+        entry_match_string = "";
+        search_word_match_string = strip_kana(search_word);
+        if(search_word.match(/\p{Script=Han}/gu) != null) {
+            for (let element of kebs) {
+                entry_match_string = strip_kana(element.textContent);
+                if(entry_match_string == search_word_match_string) {
+                    //console.log("kanaless match: " + search_word + " -> " + search_word_match_string + ", " + element.textContent + " -> " + entry_match_string);
+                    kanaless_match=true;
+                    found=true;
+                    break;
+                }
             }
         }
 
+        if(exact_keb_match || exact_reb_match) {
+            priority += 2;
+        } // we don't add priority for kanaless, for now
+
+
+
+
         if (found) {
-            results_counter++;
             //await results_counter_update(results_counter);
 
             row_container = results_container_column.createElement("div");
@@ -383,14 +434,29 @@ async function searchXML(search_word) {
             k_ele_container = results_container_column.createElement("div");
             k_ele_container.setAttribute("class","k_ele_container");
             has_kebs=false;
-            kanaless_match = false;
+
+            has_freq_tag=false;
+
+            // string containing search-only-forms (if there are any) for
+            // internal html (not user-facing), mainly for debug
+            search_only_string="";
+
             for (let m=0;m < k_ele.length;m++) {
 
                 // check if ke_inf exists and contains search-only desc so we
                 // can skip displaying this reading
                 skip=false;
                 for (let k=0;k < k_ele[m].childElementCount;k++) {
-                    if(k_ele[m].children[k].textContent == "search-only kanji form") { skip=true; }
+                    if(k_ele[m].children[k].textContent == "search-only kanji form") {
+                        skip=true;
+                    }
+                }
+                if(skip) {
+                    for (let k=0;k < k_ele[m].childElementCount;k++) {
+                        if(k_ele[m].children[k].tagName == "keb") {
+                            search_only_string += k_ele[m].children[k].textContent;
+                        }
+                    }
                 }
 
                 if (!skip) {
@@ -407,25 +473,11 @@ async function searchXML(search_word) {
                                 line_break = results_container_column.createElement("br");
                                 k_ele_container.appendChild(line_break);
                             }
-
-
-
-                            // exact match, prio 3
-                            if(k_ele[m].children[k].textContent == search_word) { priority=3; }
-                            else {
-                                // kana-less match, prio 2, for example adjective 長い -> 長 or お酒 -> 酒
-                                match_string = "";
-                                entry_kana_stripped = k_ele[m].children[k].textContent.match(/\p{Script=Han}*/gu);
-                                for (s=0;s<entry_kana_stripped.length;s++) {
-                                    match_string += entry_kana_stripped[s];
-                                }
-                                if (search_word == match_string ) { kanaless_match = true; }
-                            }
                         } else {
-                            // frequency tag match, prio 1
+
                             if (k_ele[m].children[k].textContent.match(/^news[0-9]*|^ichi[0-9]|^spec[0-9]|^gai[0-9]|^nf[0-9]*/) != null) {
                                 new_html_element.setAttribute("class", "k_ele_freq");
-                                if(priority < 1 ) { priority=1; }
+                                has_freq_tag=true;
                             } else { new_html_element.setAttribute("class","k_ele_other"); }
                         }
 
@@ -433,7 +485,7 @@ async function searchXML(search_word) {
                         k_ele_container.appendChild(new_html_element);
                     }
                     has_kebs=true;
-                } else { console.log("search only desc, skip"); }
+                }
             }
             // build readings list
             for (let element of rebs) {
@@ -443,7 +495,6 @@ async function searchXML(search_word) {
 
                 new_html_element.textContent = element.textContent;
                 meanings_readings.appendChild(new_html_element);
-                if(element.textContent == search_word && priority < 1) { priority=1; }
             }
             meanings_readings.appendChild(k_ele_container);
 
@@ -528,32 +579,42 @@ async function searchXML(search_word) {
             }
 
             if (display_counter) { await results_counter_update(results_counter); }
-            // ordering
-            if(kanaless_match) {
-                if(priority < 1) { priority=1; }
-                else if (priority == 1) { priority=2; }
-            }
-            if (priority == 0) { results_container_column.body.appendChild(row_container); }
-            else if (priority == 1) { row_prio_container.after(row_container); }
-            else if (priority == 2) { row_prio_container.appendChild(row_container); }
-            else if (priority == 3) { row_prio_container.before(row_container); }
-            else { results_container_column.body.appendChild(row_container); }
+
+            if(has_freq_tag) { priority++; }
+
+            row_container.setAttribute("priority", priority);
 
             results_tally++;
-            if (results_tally > 499) {
-                console.log("too many results, aborting (" + results_tally + ")");
-                i=entries.length;
+            // DISCARD LOW PRIO IF TOO MANY RESULTS, DISCARD ALL IF WAY TOO MANY
+            if (results_tally >= 1000) {
+                i=entries.length; // quits the for loop
+            } else {
+                // ordering
+                if (priority == 0 && results_tally <= 500) { results_container_column.body.appendChild(row_container); results_counter++; }
+                else if (priority == 1) { row_prio_container.after(row_container); results_counter++; }
+                else if (priority == 2) { row_prio_container.appendChild(row_container); results_counter++; }
+                else if (priority > 2) { row_prio_container.before(row_container); results_counter++; }
+                else { discarded++; }
+                if (search_only_string != "") {
+                    row_container.setAttribute("search-only", search_only_string);
+                }
             }
+
         } // if (found)
 
     }// jmdict main for-loop
+    if (display_counter) { await results_counter_update(results_counter); }
     new_iframe.style.setProperty("display", "block");
 
     // inform user that search was cut off due to too many results
-    if (results_tally > 499) {
+    if (results_tally >= 501) {
         toomanyresults = results_container_column.createElement("div");
         toomanyresults.setAttribute("class", "no_results"); // reuse
-        toomanyresults.textContent = "Search was stopped at 500 results";
+        if (results_tally >= 1000) {
+            toomanyresults.textContent = "Aborted search at 1000 matches, discarded low priority results after the 500th match (discarded: " + discarded + ")";
+        } else {
+            toomanyresults.textContent = "Discarded low priority results after the 500th match (matches: " + results_tally + ", discarded: " + discarded + ")";
+        }
         results_container_column.body.children[0].before(toomanyresults);
     }
 
@@ -674,8 +735,15 @@ window.addEventListener('popstate', async function(event) {
 
 
 window.addEventListener('keydown', (e) => {
-    console.log("keydown:" + e.key);
-    if (e.key.match(/[a-zA-Z ]/) != null) { focus(); }
+        let x = e.key;
+        if (x.match(/[a-zA-Z ]/) != null
+            && x != "ArrowUp"
+            && x != "ArrowDown"
+            && x != "Home"
+            && x != "End"
+            && x != "PageDown"
+            && x != "PageUp"
+            ) { console.log("focusing search field"); focus(); }
 });
         </script>
     </head>
