@@ -46,14 +46,16 @@ body, #search_button
 { font-size: 20px; }
 .keb
 { font-size: 20px; }
-.k_ele_freq, .k_ele_other, .senses_extras, .kanjidic2_joyo
+.k_ele_freq, .k_ele_other,
+.kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
 { font-size: 10px; }
-.senses_german, .senses_german_lead
+.senses_german, .senses_german_lead, .senses_extras,
+.kanjidic2_meanings, .kanjidic2_readings
 { font-size: 12px; }
 
 @media (max-width: 800px) {
     body, #search_button
-    { font-size: 18px; }
+    { font-size: 14px; }
     #search_field
     { font-size: 24px; }
     #clear_paste, #paste
@@ -61,15 +63,17 @@ body, #search_button
     #clear
     { font-size: 14px; }
     #status, #results_count
-    { font-size: 14px; }
+    { font-size: 12px; }
     .kanjidic2_kanji
-    { font-size: 24px; }
+    { font-size: 20px; }
     .keb
-    { font-size: 24px; }
-    .k_ele_freq, .k_ele_other, .senses_extras, .kanjidic2_joyo
-    { font-size: 14px; }
-    .senses_german, .senses_german_lead
-    { font-size: 14px; }
+    { font-size: 20px; }
+    .k_ele_freq, .k_ele_other, 
+    .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
+    { font-size: 10px; }
+    .senses_german, .senses_german_lead, .senses_extras,
+    .kanjidic2_meanings, .kanjidic2_readings
+    { font-size: 12px; }
 }
 /* FONT SIZES END */
 
@@ -184,9 +188,11 @@ flex-grow:1;
 }
 
 /* KANJIDIC2 ENTRY */
-.kanjidic2_kanji, .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
-    align-content:center;
-    line-height:20px;
+.kanjidic2_kanji, .kanjidic2_mr_container
+{ align-content: center; }
+.kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai {
+    display:inline;
+    line-height: 20px;
 }
 .kanjidic2_readings {
     color: var(--fg2);
@@ -401,4 +407,6 @@ input, #search_field_parent  {
     #search_field, #search_button { max-width:unset; }
     #search_button, #paste, #clear_paste { width: 190px; }
     input:hover { background-color:var(--bg1); }
+    .kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai
+    { line-height: 16px; }
 }
