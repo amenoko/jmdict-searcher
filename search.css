@@ -30,7 +30,7 @@ body, #search_button, #paste, #clear_paste
 
 .kanjidic2_kanji, .kanjidic2_readings, .keb, .reb,
 .reb_white, input#search_field, .search_term_header、
-#notification
+#notification, .search_term_header
 { font-family: BR Wakaisho, brw; }
 
 /* FONT SIZES */
