@@ -13,6 +13,9 @@
     --fg2: #88888c;
     --fg3: #66666c;
     --gradient: linear-gradient(90deg, rgba(28,28,31,1) 0%, rgba(68,68,73,1) 50%, rgba(28,28,31,1) 100%);
+    --mobile-offset: 0px;
+    scrollbar-width:none; /* manually make scrollbars visible in iframes via js */
+    scrollbar-color: var(--fg3) #00000000;
 }
 
 body {
@@ -23,6 +26,7 @@ body {
     height: 100dvh;
     margin:0px;
     -webkit-text-size-adjust: none;
+    overflow:hidden; /* fix this in js for iframes as well */
 }
 
 body, #search_button, #paste, #clear_paste
@@ -34,9 +38,14 @@ body, #search_button, #paste, #clear_paste
 { font-family: BR Wakaisho, brw; }
 
 /* FONT SIZES */
-body, #search_button
+body, #search_button,
+.senses_block_container, .senses_block_container_de,
+.senses_glosses, .senses_container, .meanings_readings,
+.row_container, .kanji_mr_container,
+.results_container_column_inside
 { font-size: 14px; }
-#search_field, .search_term_header, .reb_white, #notification
+#search_field, .search_term_header, .reb_white,
+#notification
 { font-size: 18px; }
 #clear_paste, #paste
 { font-size: 10px; }
@@ -151,10 +160,12 @@ input, #search_field_parent
 
 #notification_container {
     position:fixed;
-    width:100%;
     top: 80px;
     display:none;
     transition: all 0.5s;
+    width: 50%;
+    left:25%;
+    text-align:center;
 }
 
 #notification {
@@ -163,12 +174,11 @@ input, #search_field_parent
     border-color: var(--accent) !important;
     border-radius: 4px;
     box-shadow: 0px 0px 15px 0px black;
-    margin-left:auto;
-    margin-right:auto;
     border:1px solid;
     opacity:0;
     font-family: BR Wakaisho, brw;
-    animation: notif_fadeout 2s ease-out;
+    animation: notif_fadeout 1s ease-in;
+    width:100%;
 }
 
 @keyframes notif_fadeout {
@@ -192,7 +202,17 @@ input, #search_field_parent
 
 .grey {color:var(--fg2);}
 
-#greeting {display:none;}
+#greeting_container {
+    display:none;
+    height:100%;
+    border:none;
+    padding:10px;
+}
+
+#greeting_inner {
+    overflow:scroll;
+    display:inline;
+}
 
 a, a:visited {color:var(--accent);text-decoration:none;}
 a:hover {text-decoration:underline;}
@@ -341,6 +361,7 @@ input, #search_field_parent  {
     flex-direction:row;
     align-content:center;
     height:34px;
+    bottom: 0px;
 }
 
 #search_button, #paste, #clear_paste {
@@ -448,6 +469,47 @@ input, #search_field_parent  {
     input:hover { background-color:var(--bg1); }
     /*.kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai
     { line-height: 16px; }*/
+
+    /* search bar to bottom */
+    #search_bar {
+        position: fixed;
+        bottom: var(--mobile-offset);
+        background-color: var(--bg1);
+        width: 100dvw;
+        box-shadow: 0px 0px 8px 0px black;
+        padding: 3px;
+        height:54px;
+        border-width: 1px;
+    }
+
+
+    body {
+        /* allow browser to auto-hide the address bar */
+        height: calc(100dvh + 1px);
+    }
+    #results_container {
+        padding:0px;
+        max-height: calc(100dvh - 60px);
+        margin:0px;
+    }
+
+    .results_container_column {
+        margin:0px;
+        border-bottom-style:solid;
+        border-top-style: none;
+        border-right-style: none;
+        border-left-style:none;
+        border-radius: 0px;
+        border-width:2px;
+    }
+    .results_container_column:not(.results_container_column:first-child) {
+        margin: 0px;
+    }
+
+    #notification_container {
+        width:90%;
+        left:5%;
+    }
 }
 
 @media (min-width: 1400px) {

@@ -1,0 +1,28 @@
+<html><head><link href="search.css" rel="stylesheet" /></head><body id="greeting_inner">
+Frequency tags: <div class="k_ele_freq">news1/2</div> appears in the "wordfreq" file compiled by Alexandre Girardi
+from the Mainichi Shimbun. (See the Monash ftp archive for a copy.)
+Words in the first 12,000 in that file are marked "news1" and words
+in the second 12,000 are marked "news2".
+<div class="k_ele_freq">ichi1/2</div> appears in the "Ichimango goi bunruishuu", Senmon Kyouiku
+Publishing, Tokyo, 1998.  (The entries marked "ichi2" were
+demoted from ichi1 because they were observed to have low
+frequencies in the WWW and newspapers.)
+<div class="k_ele_freq">spec1</div> and <div class="k_ele_freq">spec2</div> a small number of words use this marker when they
+are detected as being common, but are not included in other lists.
+<div class="k_ele_freq">gai1/2</div> common loanwords, based on the wordfreq file.
+<div class="k_ele_freq">nfxx</div> this is an indicator of frequency-of-use ranking in the
+wordfreq file. "xx" is the number of the set of 500 words in which
+the entry can be found, with "01" assigned to the first 500, "02"
+to the second, and so on. (The entries with news1, ichi1, spec1, spec2
+and gai1 values are marked with a "(P)" in the EDICT and EDICT2
+files.)
+<br><br>This page uses <a href="https://nodeca.github.io/pako/">pako</a> for gzip decompression, <a href="https://www.edrdg.org/~smg/">JMdict</a> for vocabulary and <a href="https://www.edrdg.org/kanjidic/kanjd2index_legacy.html">KANJIDIC2</a> for basic supplemental kanji info
+<br><br>feature ideas: <strike>ordering by commonness</strike>, <strike>moving exact matches to the top regardless of commonnness</strike>, regex search,
+<strike>basic kanjidic2 integration</strike>, better mobile auto-hide / search field focusing/defocusing,
+eliminate iframe (results sub-window) minimum height, extract+display build dates for jmdict and kanjidic2
+(jmdict gets a new build everyday), <strike>fix "please wait" overflow on mobile</strike>,
+<strike>"paste from clipboard" button, button for emptying search field</strike>, changing various things to hyperlinks (e.g. jisho kanji page),
+<strike>click to copy to clipboard</strike>, <strike>keyboard input automatically focuses search bar (dunno how if IME is involved)</strike>
+if only one results container don't (i)frame it, english/german search, account for double kanji and 々s (eg 日々),
+do something about very long entries (e.g. とおる) - possibly collapse large entries<br><br>
+<a href="https://github.com/amenoko/jmdict-searcher/tree/main">GitHub</a></body></html>

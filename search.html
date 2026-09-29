@@ -76,18 +76,15 @@ function roma_to_hira(input) {
     return output;
 }
 
-function strip_kana(input_string) {
-    /*if (input_string == null || input_string == "" || input_string.match(/^ *$/) != null) {
-        console.log("strip_kana(): null or empty input, quitting");
-        return;
-    }*/
+function strip_hiragana(input_string) {
     input_stripped = "";
     if(input_string.match(/\p{Script=Han}/gu) != null) {
-        input_stripped_array = input_string.match(/\p{Script=Han}*/gu);
+        input_stripped_array = input_string.match(/[^\p{Script=Hiragana}]/gu);
         for (s=0;s<input_stripped_array.length;s++) {
             input_stripped += input_stripped_array[s];
         }
     }
+    console.log("strip_hiragana(): " + input_stripped);
     return input_stripped;
 }
 
@@ -130,14 +127,15 @@ function clear_input() {
 }
 
 // jmdict
-let xmlDoc = null;
+let xmlDoc_jm = null;
+jm_date = "";
 // kanjidic2
 let xmlDoc_kanji = null;
+kanji_date = "";
 
 // INIT
 async function init() {
     //status_update("Loading JMdict");
-    /* xmlDoc = await loadXMLDoc("JMdict.xml"); */
     try {
         const response = await fetch("JMdict.xml.gz");
         if (!response.ok) {
@@ -148,9 +146,10 @@ async function init() {
         console.log(result);
         inflateme = new Uint8Array(result);
         inflated = pako.ungzip(inflateme,{ 'to': 'string' });
-        xmlDoc = new window.DOMParser().parseFromString(inflated, "text/xml");
+        xmlDoc_jm = new window.DOMParser().parseFromString(inflated, "text/xml");
         focus();
-        console.log("loaded Jmdict");
+        jm_date = inflated.match(/(?<=<!-- JMdict created..).*(?= -->)/)[0];
+        console.log("loaded Jmdict, dated: " + jm_date);
 
     } catch (error) {
         console.error(error.message);
@@ -181,10 +180,11 @@ async function init() {
         } else {
             focus();
             await status_update("");
-            results_container = document.getElementById("greeting");
+            results_container = document.getElementById("greeting_container");
             results_container.style.setProperty("display", "block");
         }
         console.log("loaded kanjidic2");
+        kanji_date = xmlDoc_kanji.getElementsByTagName("date_of_creation")[0].textContent;
 
     } catch (error) {
         console.error(error.message);
@@ -215,11 +215,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     else if (init_status == 2) {status_update("Failed to load kanjidic2");}
     // if search is queued by URL params, don't free search field; searchexec() does it when it's done
     if(url_query_search_word == null) { await disable_input(false); }
-    new_html_element = document.createElement("div");
+
+    greeting_iframe = document.getElementById("greeting_container");
     modified = new Date(document.lastModified);
-    new_html_element.textContent = "last update: " + modified;
+    new_html_element = greeting_iframe.contentWindow.document.createElement("div");
+    date_text =
     new_html_element.setAttribute("class", "grey");
-    document.getElementById("greeting").appendChild(new_html_element);
+    greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML =
+    "<div class=\"grey\">Last update: " + modified + "<br>"
+    + "JMdict version: " + jm_date + "<br>"
+    + "kanjidic2 version: " + kanji_date
+    + "<\/div><br>"
+    + greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML;
 }, false);
 
 //iframe_counter = 0; // for self-identification
@@ -235,7 +242,7 @@ async function searchXML(search_word, display_search_term_header) {
         return;
     }
     found=false;
-    entries=xmlDoc.getElementsByTagName("entry");
+    entries=xmlDoc_jm.getElementsByTagName("entry");
     new_iframe = document.createElement("iframe");
     new_iframe.setAttribute("class","results_container_column");
     new_iframe.style.setProperty("display", "none");
@@ -260,14 +267,11 @@ async function searchXML(search_word, display_search_term_header) {
     link.href = "search.css";
     results_container_column.head.appendChild(link);
     results_container_column.body.setAttribute("class","results_container_column_inside");
-    /*
-    iframe_counter += 1;
-    new_iframe.setAttribute("iframe_counter",iframe_counter);
-    results_container_column.addEventListener('scroll', (event) => {
-        console.log(new_iframe.contentWindow.scrollY);
-        console.log(window.frameElement.tagName);
-        console.log(window.frameElement.getAttribute("iframe_counter"));
-     });*/
+    // css has scrollbar-width: none; so we manually change it for iframe here
+    results_container_column.documentElement.style.setProperty("scrollbar-width", "auto");
+    // same with overflow
+    results_container_column.body.style.setProperty("overflow-y", "scroll");
+
     results_container_column.addEventListener('keydown', (e) => {
         let x = e.key;
         if (x.match(/[a-zA-Z ]/) != null
@@ -372,7 +376,7 @@ async function searchXML(search_word, display_search_term_header) {
         found=false;
         priority=0; // 0 normal, 1 append to top, 2 append to top after 1 (so it's higher)
         // priority is additive, 2 points for exact matches, 1 point for frequency tag,
-        // 1 point for kana-less match
+        // 1 point for hiragana-less match
 
         exact_keb_match=false;
         exact_reb_match=false;
@@ -397,16 +401,16 @@ async function searchXML(search_word, display_search_term_header) {
                 }
             }
         }
-        // kana-less match
-        kanaless_match = false;
+        // hiragana-less match
+        hiraganaless_match = false;
         entry_match_string = "";
-        search_word_match_string = strip_kana(search_word);
+        search_word_match_string = strip_hiragana(search_word);
         if(search_word.match(/\p{Script=Han}/gu) != null) {
             for (let element of kebs) {
-                entry_match_string = strip_kana(element.textContent);
+                entry_match_string = strip_hiragana(element.textContent);
                 if(entry_match_string == search_word_match_string) {
                     //console.log("kanaless match: " + search_word + " -> " + search_word_match_string + ", " + element.textContent + " -> " + entry_match_string);
-                    kanaless_match=true;
+                    hiraganaless_match=true;
                     found=true;
                     break;
                 }
@@ -471,6 +475,7 @@ async function searchXML(search_word, display_search_term_header) {
                         //choose class depending on what type of element this is, and assign priority
                         if(k_ele[m].children[k].tagName == "keb") {
                             new_html_element.setAttribute("class","keb");
+                            add_clipboard_event(new_html_element);
                             // add line break after everyone except last
                             if (m > 0) {
                                 line_break = results_container_column.createElement("br");
@@ -543,6 +548,7 @@ async function searchXML(search_word, display_search_term_header) {
                 if (senses_glosses != "") {
                     senses_glosses_element = results_container_column.createElement("div");
                     senses_glosses_element.setAttribute("class", "senses_glosses");
+                    add_clipboard_event(senses_glosses_element);
                     senses_glosses_element.textContent = senses_glosses.slice(0,-2);
                     senses_block_container.appendChild(senses_glosses_element);
                 }
@@ -570,6 +576,7 @@ async function searchXML(search_word, display_search_term_header) {
                     // string of german meanings
                     senses_glosses_element = results_container_column.createElement("div");
                     senses_glosses_element.setAttribute("class","senses_german");
+                    add_clipboard_event(senses_glosses_element);
                     senses_glosses_element.textContent = german_string.slice(0,-2);
                     senses_block_container_de.appendChild(senses_glosses_element);
                 }
@@ -584,8 +591,10 @@ async function searchXML(search_word, display_search_term_header) {
             if (display_counter) { await results_counter_update(results_counter); }
 
             if(has_freq_tag) {
-                if(kanaless_match) { priority += 2; }
+                if(hiraganaless_match) { priority += 2; }
                 else { priority++; }
+            } else {
+                if(hiraganaless_match) { priority++; }
             }
 
             row_container.setAttribute("priority", priority);
@@ -659,7 +668,7 @@ async function searchexec(optional_string, pushstate) {
     if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
         console.log("Empty, quitting");
         document.getElementById("results_count").textContent = "";
-        document.getElementById("greeting").style.setProperty("display", "block");
+        document.getElementById("greeting_container").style.setProperty("display", "block");
         document.getElementById("results_container").style.setProperty("display", "none");
         // remove search word from url if there was any
         url = window.location;
@@ -681,7 +690,7 @@ async function searchexec(optional_string, pushstate) {
     results_counter=0;
     await disable_input(true);
     await unfocus();
-    document.getElementById("greeting").style.setProperty("display", "none");
+    document.getElementById("greeting_container").style.setProperty("display", "none");
     // add search word to url
     url = new URL(window.location);
     url.searchParams.set('q', search_field_contents);
@@ -791,9 +800,17 @@ function notification(text, x,y) {
     //notify_ele.style.setProperty("left", x + "px");
     //notify_ele.style.setProperty("top", y + "px");
     notify_container.style.setProperty("display", "flex");
-    setTimeout(() => notify_container.style.setProperty("display", "none"), 2100);
+    setTimeout(() => notify_container.style.setProperty("display", "none"), 1100);
     console.log("notification(): " + text);
 }
+
+// FIX SEARCH BAR ON MOBILE
+window.visualViewport.addEventListener("resize", (event) => {
+    console.log("resize event");
+    offset = window.innerHeight - window.visualViewport.height;
+    //document.getElementById("search_bar").style.setProperty("bottom", offset + "px");
+    document.documentElement.style.setProperty("--mobile-offset", offset + "px");
+});
         </script>
     </head>
     <body>
@@ -820,36 +837,6 @@ function notification(text, x,y) {
             }
         });
     </script>
-    <div id="results_container"></div><div id="greeting">
-        You can add this page as a standalone web app to have the address bar out of your way on mobile
-        <br>
-        <br>Frequency tags: <div class="k_ele_freq">news1/2</div> appears in the "wordfreq" file compiled by Alexandre Girardi
-        from the Mainichi Shimbun. (See the Monash ftp archive for a copy.)
-        Words in the first 12,000 in that file are marked "news1" and words
-        in the second 12,000 are marked "news2". 
-        <div class="k_ele_freq">ichi1/2</div> appears in the "Ichimango goi bunruishuu", Senmon Kyouiku
-        Publishing, Tokyo, 1998.  (The entries marked "ichi2" were
-        demoted from ichi1 because they were observed to have low
-        frequencies in the WWW and newspapers.) 
-        <div class="k_ele_freq">spec1</div> and <div class="k_ele_freq">spec2</div> a small number of words use this marker when they
-        are detected as being common, but are not included in other lists.
-        <div class="k_ele_freq">gai1/2</div> common loanwords, based on the wordfreq file. 
-        <div class="k_ele_freq">nfxx</div> this is an indicator of frequency-of-use ranking in the
-        wordfreq file. "xx" is the number of the set of 500 words in which
-        the entry can be found, with "01" assigned to the first 500, "02"
-        to the second, and so on. (The entries with news1, ichi1, spec1, spec2
-        and gai1 values are marked with a "(P)" in the EDICT and EDICT2
-        files.)
-        <br><br>This page uses <a href="https://nodeca.github.io/pako/">pako</a> for gzip decompression, <a href="https://www.edrdg.org/~smg/">JMdict</a> for vocabulary and <a href="https://www.edrdg.org/kanjidic/kanjd2index_legacy.html">KANJIDIC2</a> for basic supplemental kanji info
-        <br><br>feature ideas: <strike>ordering by commonness</strike>, <strike>moving exact matches to the top regardless of commonnness</strike>, regex search,
-        <strike>basic kanjidic2 integration</strike>, better mobile auto-hide / search field focusing/defocusing,
-        eliminate iframe (results sub-window) minimum height, extract+display build dates for jmdict and kanjidic2
-        (jmdict gets a new build everyday), <strike>fix "please wait" overflow on mobile</strike>, 
-        <strike>"paste from clipboard" button, button for emptying search field</strike>, changing various things to hyperlinks (e.g. jisho kanji page), 
-        click to copy to clipboard, <strike>keyboard input automatically focuses search bar (dunno how if IME is involved)</strike>
-        if only one results container don't (i)frame it, english/german search, account for double kanji and 々s (eg 日々), 
-        do something about very long entries (e.g. とおる) - possibly collapse large entries
-        <br><br><a href="https://github.com/amenoko/jmdict-searcher/tree/main">github repo for this tool</a>
-        </div>
+    <div id="results_container"></div><iframe src="greeting.html" id="greeting_container"></iframe>
     </body>
 </html>
