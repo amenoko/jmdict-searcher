@@ -102,7 +102,7 @@ body, #search_button,
 /* for horizontal lists, margin-right */
 #search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
     { margin-right: 6px; }
-.keb, .k_ele_freq, .k_ele_other, .senses_german_lead
+.keb, .k_ele_freq, .k_ele_other, .senses_german_lead:first-child
     { margin-right: 5px; }
 .kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
     { margin-right:8px;}

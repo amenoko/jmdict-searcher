@@ -84,7 +84,6 @@ function strip_hiragana(input_string) {
             input_stripped += input_stripped_array[s];
         }
     }
-    console.log("strip_hiragana(): " + input_stripped);
     return input_stripped;
 }
 
@@ -763,14 +762,16 @@ window.addEventListener('popstate', async function(event) {
 // FOCUS SEARCHBAR ON KEYPRESS
 window.addEventListener('keydown', (e) => {
         let x = e.key;
-        if (x.match(/[a-zA-Z ]/) != null
-            && x != "ArrowUp"
+        if (x.match(/[a-zA-Z ]/) != null) {
+            if(x != "ArrowUp"
             && x != "ArrowDown"
             && x != "Home"
             && x != "End"
             && x != "PageDown"
             && x != "PageUp"
             ) { console.log("focusing search field"); focus(); }
+        }
+
 });
 
 // copy to clipboard from eventhandler
@@ -781,8 +782,6 @@ function clipboard(text) {
 
 // ADD CLIPBOARD FUNCTIONALITY
 function add_clipboard_event(element) {
-    console.log("add_clipboard_event(): " + element.textContent);
-
     element.addEventListener("click", (event) => {
         navigator.clipboard.writeText(event.target.textContent);
         console.log("clipboard: " + event.target.textContent);
@@ -818,13 +817,13 @@ window.visualViewport.addEventListener("resize", (event) => {
         <div id="notification">Notification here</div>
     </div>
     <div id="search_bar">
+        <input type="submit" value="Paste & Go (Add)" onClick="paste()" id="paste" disabled>
+        <input type="submit" value="Paste & Go (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
         <div id="search_field_parent" class="search_field_parent_disabled">
             <input type="text" name="literal" id="search_field" disabled>
             <input type="submit" value="⨉" onClick="clear_input()" id="clear" disabled>
         </div>
         <input type="submit" value="Go" onClick="searchexec()" id="search_button" disabled>
-        <input type="submit" value="Paste & Go (Add)" onClick="paste()" id="paste" disabled>
-        <input type="submit" value="Paste & Go (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
         <div id="status">Please wait...</div>
         <div id="results_count"></div>
     </div>
