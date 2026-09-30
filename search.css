@@ -68,7 +68,9 @@ body, #search_button,
     #search_field
     { font-size: 24px; }
     #clear_paste, #paste
-    { font-size: 12px; }/*
+    { font-size: 12px; }
+    #greeting_inner
+    { font-size: 10px; }/*
     #clear
     { font-size: 14px; }
     #status, #results_count
