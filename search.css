@@ -63,12 +63,12 @@ body, #search_button,
 { font-size: 12px; }
 
 @media (max-width: 800px) {
-    body, #search_button
-    { font-size: 14px; }
+    /*body, #search_button
+    { font-size: 14px; }*/
     #search_field
     { font-size: 24px; }
     #clear_paste, #paste
-    { font-size: 12px; }
+    { font-size: 12px; }/*
     #clear
     { font-size: 14px; }
     #status, #results_count
@@ -78,7 +78,7 @@ body, #search_button,
     { font-size: 10px; }
     .reb, .senses_german, .senses_german_lead,
     .senses_extras, .kanjidic2_meanings, .kanjidic2_readings
-    { font-size: 12px; }
+    { font-size: 12px; }*/
 }
 /* FONT SIZES END */
 
@@ -333,9 +333,9 @@ input, #search_field_parent  {
 }
 #clear_paste, #paste { white-space:normal;}
 
-#search_button:active, #paste:active, #clear:active, #clear_paste:active {
+:is(#search_button, #paste, #clear, #clear_paste):active {
     background-color: var(--accent);
-    color:white;
+    color: var(--bg1);
 }
 
 #status {
@@ -466,7 +466,7 @@ input, #search_field_parent  {
     #search_bar {height:54px;}
     #search_field, #search_button { max-width:unset; }
     #search_button, #paste, #clear_paste { width: 190px; }
-    input:hover { background-color:var(--bg1); }
+    input:hover, #clear:hover, #search_field:hover background-color:var(--bg1); }
     /*.kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai
     { line-height: 16px; }*/
 
