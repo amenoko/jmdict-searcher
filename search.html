@@ -601,11 +601,11 @@ async function searchXML(search_word, display_search_term_header) {
 
             results_tally++;
             // DISCARD LOW PRIO IF TOO MANY RESULTS, DISCARD ALL IF WAY TOO MANY
-            if (results_tally >= 1000) {
+            if (results_tally >= 1500) {
                 i=entries.length; // quits the for loop
             } else {
                 // ordering
-                if (priority == 0 && results_tally <= 500) { results_container_column.body.appendChild(row_container); results_counter++; }
+                if (priority == 0 && results_tally <= 1000) { results_container_column.body.appendChild(row_container); results_counter++; }
                 else if (priority == 1) { row_prio_container.after(row_container); results_counter++; }
                 else if (priority == 2) { row_prio_container.appendChild(row_container); results_counter++; }
                 else if (priority > 2) { row_prio_container.before(row_container); results_counter++; }
@@ -622,13 +622,13 @@ async function searchXML(search_word, display_search_term_header) {
     new_iframe.style.setProperty("display", "block");
 
     // inform user that search was cut off due to too many results
-    if (results_tally >= 501) {
+    if (results_tally >= 1001) {
         toomanyresults = results_container_column.createElement("div");
         toomanyresults.setAttribute("class", "no_results"); // reuse
-        if (results_tally >= 1000) {
-            toomanyresults.textContent = "Aborted search at 1000 matches, discarded low priority results after the 500th match (discarded: " + discarded + ")";
+        if (results_tally >= 1500) {
+            toomanyresults.textContent = "Aborted search at 1500 matches, discarded low priority results after the 1000th match (discarded: " + discarded + ")";
         } else {
-            toomanyresults.textContent = "Discarded low priority results after the 500th match (matches: " + results_tally + ", discarded: " + discarded + ")";
+            toomanyresults.textContent = "Discarded low priority results after the 1000th match (matches: " + results_tally + ", discarded: " + discarded + ")";
         }
         results_container_column.body.children[0].before(toomanyresults);
     }
