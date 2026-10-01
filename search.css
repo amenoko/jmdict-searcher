@@ -468,7 +468,7 @@ input, #search_field_parent  {
     #search_bar {height:54px;}
     #search_field, #search_button { max-width:unset; }
     #search_button, #paste, #clear_paste { width: 190px; }
-    input:hover, #clear:hover, #search_field:hover background-color:var(--bg1); }
+    input:hover, #clear:hover, #search_field:hover { background-color:var(--bg1); }
     /*.kanjidic2_meanings, .kanjidic2_readings, .kanjidic2_joyo, .kanjidic2_hyougai
     { line-height: 16px; }*/
 
