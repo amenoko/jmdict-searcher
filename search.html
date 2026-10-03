@@ -785,14 +785,15 @@ function clipboard(text) {
 
 // ADD CLIPBOARD FUNCTIONALITY
 function add_clipboard_event(element) {
-    let new_clipboard_text = "";
-    console.log("element.tagName: " + element.tagName);
-    if (element.getAttribute("class") == "kanjidic2_mr_container") {
-        console.log("is kanjidic2_mr_container");
-        new_clipboard_text = element.children[0].textContent;
-    } else { console.log("is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
-    
     element.addEventListener("click", (event) => {
+        let new_clipboard_text = "";
+        console.log("element.tagName: " + element.tagName);
+        if (element.getAttribute("class") == "kanjidic2_mr_container") {
+            console.log("is kanjidic2_mr_container");
+            new_clipboard_text = element.children[0].textContent;
+        } else { console.log("is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
+
+        
         navigator.clipboard.writeText(new_clipboard_text);
         console.log("clipboard: " + new_clipboard_text);
         notification("Copied to clipboard: " + new_clipboard_text);
