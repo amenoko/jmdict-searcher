@@ -307,6 +307,7 @@ async function searchXML(search_word, display_search_term_header) {
                 new_html_element.textContent = kanji_literal + "";
                 row_container.appendChild(new_html_element);
                 new_html_element.setAttribute("href", "https://lingweb.eva.mpg.de/kanji/index.html?kanji=" + kanji_literal);
+                new_html_element.setAttribute("target", "_blank");
                 //add_clipboard_event(new_html_element);
 
                 // joyo display
