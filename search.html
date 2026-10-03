@@ -329,6 +329,7 @@ async function searchXML(search_word, display_search_term_header) {
                 mr_container = results_container_column.createElement("div");
                 mr_container.setAttribute("class", "kanjidic2_mr_container");
                 row_container.appendChild(mr_container);
+                add_clipboard_event(mr_container);
 
                 // meanings
                 kanji_meanings = characters[p].getElementsByTagName("meaning");
@@ -340,7 +341,6 @@ async function searchXML(search_word, display_search_term_header) {
                 new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
                 new_html_element.setAttribute("class", "kanjidic2_meanings");
                 mr_container.appendChild(new_html_element);
-                add_clipboard_event(new_html_element);
 
                 // readings
                 kanji_readings = characters[p].getElementsByTagName("reading");
