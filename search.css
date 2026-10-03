@@ -57,6 +57,8 @@ body, #search_button,
 .k_ele_freq, .k_ele_other,
 .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
 { font-size: 10px; }
+.kanjidic2_link_container
+{ font-size: 8px; }
 .reb, .senses_german, .senses_german_lead,
 .senses_extras, .kanjidic2_meanings, .kanjidic2_readings
 { font-size: 12px; }

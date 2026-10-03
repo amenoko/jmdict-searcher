@@ -300,13 +300,13 @@ async function searchXML(search_word, display_search_term_header) {
                 row_container = results_container_column.createElement("div");
                 row_container.setAttribute("class","row_container");
 
-                new_html_element = results_container_column.createElement("a");
+                new_html_element = results_container_column.createElement("div");
                 new_html_element.setAttribute("class","kanjidic2_kanji");
                 new_html_element.textContent = kanji_literal + "";
                 row_container.appendChild(new_html_element);
-                new_html_element.setAttribute("href", "https://lingweb.eva.mpg.de/kanji/index.html?kanji=" + kanji_literal);
-                new_html_element.setAttribute("target", "_blank");
-                //add_clipboard_event(new_html_element);
+                //new_html_element.setAttribute("href", "https://lingweb.eva.mpg.de/kanji/index.html?kanji=" + kanji_literal);
+                //new_html_element.setAttribute("target", "_blank");
+                add_clipboard_event(new_html_element);
 
                 // joyo display
                 joyo_html_element = results_container_column.createElement("div");
@@ -359,6 +359,36 @@ async function searchXML(search_word, display_search_term_header) {
                 mr_container.appendChild(new_html_element);
 
                 if (grade != null) { mr_container.appendChild(joyo_html_element); }
+
+
+                // external links
+                link_container = results_container_column.createElement("div");
+                link_container.setAttribute("class", "kanjidic2_link_container");
+
+                new_html_element = results_container_column.createElement("a");
+                new_html_element.textContent = "Wiktionary";
+                new_html_element.setAttribute("target", "_blank");
+                new_html_element.setAttribute("href", "https://en.wiktionary.org/wiki/" + kanji_literal);
+                link_container.appendChild(new_html_element);
+
+                link_container.innerHTML += "・";
+
+                new_html_element = results_container_column.createElement("a");
+                new_html_element.textContent = "JP-DE Hans-Jörg Bibiko";
+                new_html_element.setAttribute("target", "_blank");
+                new_html_element.setAttribute("href", "https://lingweb.eva.mpg.de/kanji/index.html?kanji=" + kanji_literal);
+                link_container.appendChild(new_html_element);
+
+                link_container.innerHTML += "・";
+
+                new_html_element = results_container_column.createElement("a");
+                new_html_element.textContent = "kanji.me";
+                new_html_element.setAttribute("target", "_blank");
+                new_html_element.setAttribute("href", "https://kanji.me/" + kanji_literal);
+                link_container.appendChild(new_html_element);
+
+                mr_container.appendChild(link_container);
+
                 results_container_column.body.appendChild(row_container);
             }
         } // end of kanjidic2 query loop
