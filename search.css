@@ -44,8 +44,7 @@ body, #search_button,
 .row_container, .kanji_mr_container,
 .results_container_column_inside
 { font-size: 14px; }
-#search_field, .search_term_header, .reb_white,
-#notification
+#search_field, .search_term_header, .reb_white
 { font-size: 18px; }
 #clear_paste, #paste
 { font-size: 10px; }
@@ -63,24 +62,12 @@ body, #search_button,
 { font-size: 12px; }
 
 @media (max-width: 800px) {
-    /*body, #search_button
-    { font-size: 14px; }*/
     #search_field
     { font-size: 24px; }
     #clear_paste, #paste
     { font-size: 12px; }
     #greeting_inner
-    { font-size: 10px; }/*
-    #clear
-    { font-size: 14px; }
-    #status, #results_count
-    { font-size: 12px; }
-    .k_ele_freq, .k_ele_other, 
-    .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
     { font-size: 10px; }
-    .reb, .senses_german, .senses_german_lead,
-    .senses_extras, .kanjidic2_meanings, .kanjidic2_readings
-    { font-size: 12px; }*/
 }
 /* FONT SIZES END */
 
@@ -120,44 +107,6 @@ body, #search_button,
     #paste, #clear_paste
         { padding: 2px; }
 }
-/*
-#results_container
-    { margin: 0px 5px 5px 5px; }
-#greeting
-    { margin: 10px; }
-.no_results
-    { margin: 10px; }
-.results_container_column
-    { margin-top: 6px; }
-.row_container
-    { margin: 0px 5px 0px 5px;
-      padding: 0px 0px 0px 0px; }
-.kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
-    { margin: 0px 10px 0px 0px; }
-.row_container:has(.kanjidic2_kanji)
-    { padding: 0px 0px 0px 0px; }
-.senses_block_container
-    { margin:0px 0px 5px 0px;
-      padding:0px; }
-.senses_block_container:last-child
-    { margin:0px; }
-.senses_container
-    { margin:5px; }
-.senses_german_lead
-    { margin: 0px; }
-.senses_german_lead:first-child
-    { margin: 0px 5px 0px 0px; }
-input, #search_field_parent
-    { padding: 0px 5px 0px 5px; }
-.meanings_readings
-    { margin: 5px 10px 5px 0px;
-      padding:0px; }
-.keb, .k_ele_other, .k_ele_freq
-    { margin-right: 5px; }
-.k_ele_other:last-child, .k_ele_freq:last-child
-    { margin-right: 0px; }
-#search_field
-    { padding-right: 5px; }
 /* MARGINS AND PADDINGS END */
 
 #notification_container {
@@ -439,25 +388,13 @@ input, #search_field_parent  {
 @keyframes sweep5 {
     0%,26%,56%,100% { border-color: var(--accent); }
     41% { border-color:white;}
-}/*
-#search_field { animation: 1s infinite sweep1; }
-#search_button { animation: 1s infinite sweep2; }
-#clear { animation: 1s infinite sweep3; }
-#paste { animation: 1s infinite sweep4; }
-#clear_paste { animation: 1s infinite sweep5; }*/
-/*
-@keyframes heartbeat {
-    0%,55% { box-shadow: 0px 0px 0px 0px #ffffff44; }
-    7% {box-shadow: 0px 0px 3px 3px #ffffff44;}
-    22% { box-shadow: 0px 0px 1px 1px #ffffff44; }
-    37% {box-shadow: 0px 0px 2px 3px #ffffff44;}
-}*/
+}
 
 @keyframes heartbeat {
-    0%,45%,100% { box-shadow: 0px 0px 0px 0px #ffffff44; }
-    52% {box-shadow: 0px 0px 3px 3px #ffffff44;}
-    67% { box-shadow: 0px 0px 1px 0px #ffffff44; }
-    80% {box-shadow: 0px 0px 3px 3px #ffffff44;}
+    0%,45%,100% { box-shadow: 0px 0px 0px 0px var(--accent); }
+    52% {box-shadow: 0px 0px 5px 1px var(--accent);}
+    67% { box-shadow: 0px 0px 3px 0px var(--accent); }
+    80% {box-shadow: 0px 0px 5px 1px var(--accent);}
 }
 
 .activate {
@@ -486,7 +423,7 @@ input, #search_field_parent  {
         bottom: var(--mobile-offset);
         background-color: var(--bg1);
         width: 100dvw;
-        box-shadow: 0px 0px 8px 0px black;
+        box-shadow: 0px 0px 15px 0px black;
         padding: 3px;
         height:54px;
         border-width: 1px;
