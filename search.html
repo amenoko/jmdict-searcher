@@ -102,6 +102,8 @@ async function status_update(text) {
 async function focus(animate) {
     if (animate == null) { animate = true; }
 
+    if (document.getElementById("search_field"). disabled == true) { animate = false; }
+
     if (document.activeElement != document.getElementById("search_field") && animate) {
         document.getElementById("search_field_parent").setAttribute("class", "activate");
         setTimeout(() => { document.getElementById("search_field_parent").setAttribute("class", "");},500);
@@ -707,6 +709,7 @@ async function searchexec(optional_string, pushstate) {
                 window.history.pushState({},'',snip[0].slice(0,-1)); }
         }
         await status_update("");
+        document.getElementsByTagName("title")[0].textContent = "JMdict Searcher";
         return;
     }
 
