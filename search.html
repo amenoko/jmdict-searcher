@@ -550,7 +550,7 @@ async function searchXML(search_word, display_search_term_header) {
                 if (senses_glosses != "") {
                     senses_glosses_element = results_container_column.createElement("div");
                     senses_glosses_element.setAttribute("class", "senses_glosses");
-                    add_clipboard_event(senses_glosses_element);
+                    //add_clipboard_event(senses_glosses_element); annoying
                     senses_glosses_element.textContent = senses_glosses.slice(0,-2);
                     senses_block_container.appendChild(senses_glosses_element);
                 }
