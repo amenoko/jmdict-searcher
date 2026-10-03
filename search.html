@@ -282,6 +282,8 @@ async function searchXML(search_word, display_search_term_header) {
     results_container_column.documentElement.style.setProperty("scrollbar-width", "auto");
     // same with overflow
     results_container_column.body.style.setProperty("overflow-y", "scroll");
+    // re-run light_mode() is necessary
+    if(light_mode_enabled) { light_mode(); }
 
     add_keydown_event(results_container_column);
 
@@ -796,16 +798,20 @@ window.addEventListener('popstate', async function(event) {
 function add_keydown_event(element) {
     console.log("add_keydown_event(): " + element.tagName);
     element.addEventListener("keydown", (e) => {
+        console.log("keydown_event_listener: " + e.key);
+        console.log("keydown_event_listener: " + e.tagName + ", " + e.textContent);
         let x = e.key;
-        if (x.match(/[a-zA-Z ]/) != null) {
-            if(x != "ArrowUp"
-            && x != "ArrowDown"
-            && x != "Home"
-            && x != "End"
-            && x != "PageDown"
-            && x != "PageUp"
-            ) { console.log("focusing search field"); focus(); }
-        }
+        //if (x.match(/[a-zA-Z ]/) != null) {
+        if(x != "ArrowUp"
+        && x != "ArrowDown"
+        && x != "Home"
+        && x != "End"
+        && x != "PageDown"
+        && x != "PageUp"
+        ) { console.log("focusing search field"); focus(); }
+
+        if (x == "Insert" || x == "ScrollLock" || x == "Pause") { light_mode(); }
+        //}
     });
 }
 
@@ -850,6 +856,33 @@ window.visualViewport.addEventListener("resize", (event) => {
     //document.getElementById("search_bar").style.setProperty("bottom", offset + "px");
     document.documentElement.style.setProperty("--mobile-offset", offset + "px");
 });
+
+light_mode_enabled = false;
+// ENABLE LIGHT MODE (hacky)
+function light_mode() {
+    console.log("light_mode()");
+    global_css_var("bg1", "white");
+    global_css_var("bg2", "white");
+    global_css_var("bg3", "#00beff50");
+    global_css_var("fg1", "#1c1c22");
+    global_css_var("fg2", "#8d8d8d");
+    global_css_var("fg3", "#8d8d8d");
+    global_css_var("accent", "#00beff");
+    global_css_var("fgh", "black");
+    light_mode_enabled = true;
+}
+function global_css_var(name, value, target_iframe) {
+    // main/global document
+    document.documentElement.style.setProperty("--" + name, value);
+
+    // iframes
+    iframes = document.getElementsByTagName("iframe");
+    if (iframes != null) {
+        for (let i=0;i<iframes.length;i++) {
+            iframes[i].contentWindow.document.documentElement.style.setProperty("--" + name, value);
+        }
+    }
+}
         </script>
     </head>
     <body>

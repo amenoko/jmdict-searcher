@@ -8,10 +8,11 @@
     --accent_dark: #5290ac;
     --bg1: #1c1c22;
     --bg2: #202026;
-    --bg3: #26262d;
+    --bg3: #81bfdc50;
     --fg1: #dddddf;
     --fg2: #88888c;
     --fg3: #66666c;
+    --fgh: white; /* highlight (for button text) */
     --gradient: linear-gradient(90deg, rgba(28,28,31,1) 0%, rgba(68,68,73,1) 50%, rgba(28,28,31,1) 100%);
     --mobile-offset: 0px;
     scrollbar-width:none; /* manually make scrollbars visible in iframes via js */
@@ -276,7 +277,7 @@ input, #search_field_parent  {
 }
 :is(#clear, #search_button, #paste, #clear_paste):hover {
     background-color: var(--bg3);
-    color:white;
+    color: var(--fgh);
 }
 
 #search_button, #paste, #clear_paste, #search_field_parent {
@@ -369,27 +370,6 @@ input, #search_field_parent  {
 #clear:active {
     background-color:red;
     border:none;
-}
-
-@keyframes sweep1 {
-    0%,10%,40%,100% { border-color: var(--accent); }
-    25% { border-color:white;}
-}
-@keyframes sweep2 {
-    0%,14%,44%,100% { border-color: var(--accent); }
-    29% { border-color:white;}
-}
-@keyframes sweep3 {
-    0%,18%,48%,100% { border-color: var(--accent); }
-    33% { border-color:white;}
-}
-@keyframes sweep4 {
-    0%,22%,52%,100% { border-color: var(--accent); }
-    37% { border-color:white;}
-}
-@keyframes sweep5 {
-    0%,26%,56%,100% { border-color: var(--accent); }
-    41% { border-color:white;}
 }
 
 @keyframes heartbeat {
