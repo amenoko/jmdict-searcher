@@ -99,7 +99,13 @@ async function status_update(text) {
 
 }
 
-async function focus() {
+async function focus(animate) {
+    if (animate == null) { animate = true; }
+
+    if (document.activeElement != document.getElementById("search_field") && animate) {
+        document.getElementById("search_field_parent").setAttribute("class", "activate");
+        setTimeout(() => { document.getElementById("search_field_parent").setAttribute("class", "");},500);
+    }
     document.getElementById("search_field").focus();
 }
 
@@ -204,7 +210,7 @@ results_counter=0;
 
 // POST-INIT
 document.addEventListener('DOMContentLoaded', async function () {
-// if reload, disable input
+    // if reload, disable input
     window.onbeforeunload = disable_input();
     console.log("DOMContentLoaded");
     url_query_params = new URLSearchParams(window.location.search);
@@ -227,6 +233,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     + "kanjidic2 version: " + kanji_date
     + "<\/div><br>"
     + greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML;
+    add_keydown_event(document);
+    add_keydown_event(document.getElementById("results_container"));
+    add_keydown_event(document.getElementById("greeting_container").contentWindow.document);
 }, false);
 
 //iframe_counter = 0; // for self-identification
@@ -272,18 +281,7 @@ async function searchXML(search_word, display_search_term_header) {
     // same with overflow
     results_container_column.body.style.setProperty("overflow-y", "scroll");
 
-    results_container_column.addEventListener('keydown', (e) => {
-        let x = e.key;
-        if (x.match(/[a-zA-Z ]/) != null
-            && x != "ArrowUp"
-            && x != "ArrowDown"
-            && x != "Home"
-            && x != "End"
-            && x != "PageDown"
-            && x != "PageUp"
-            ) { console.log("focusing search field"); focus(); }
-    });
-
+    add_keydown_event(results_container_column);
 
     // kanjidic2 query
     found_kanji=false;
@@ -550,7 +548,6 @@ async function searchXML(search_word, display_search_term_header) {
                 if (senses_glosses != "") {
                     senses_glosses_element = results_container_column.createElement("div");
                     senses_glosses_element.setAttribute("class", "senses_glosses");
-                    //add_clipboard_event(senses_glosses_element); annoying
                     senses_glosses_element.textContent = senses_glosses.slice(0,-2);
                     senses_block_container.appendChild(senses_glosses_element);
                 }
@@ -763,7 +760,9 @@ window.addEventListener('popstate', async function(event) {
 });
 
 // FOCUS SEARCHBAR ON KEYPRESS
-window.addEventListener('keydown', (e) => {
+function add_keydown_event(element) {
+    console.log("add_keydown_event(): " + element.tagName);
+    element.addEventListener("keydown", (e) => {
         let x = e.key;
         if (x.match(/[a-zA-Z ]/) != null) {
             if(x != "ArrowUp"
@@ -774,8 +773,8 @@ window.addEventListener('keydown', (e) => {
             && x != "PageUp"
             ) { console.log("focusing search field"); focus(); }
         }
-
-});
+    });
+}
 
 // copy to clipboard from eventhandler
 function clipboard(text) {
@@ -793,7 +792,6 @@ function add_clipboard_event(element) {
             new_clipboard_text = element.children[0].textContent;
         } else { console.log("is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
 
-        
         navigator.clipboard.writeText(new_clipboard_text);
         console.log("clipboard: " + new_clipboard_text);
         notification("Copied to clipboard: " + new_clipboard_text);
