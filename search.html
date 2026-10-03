@@ -786,7 +786,7 @@ function clipboard(text) {
 // ADD CLIPBOARD FUNCTIONALITY
 function add_clipboard_event(element) {
     new_clipboard_text = "";
-    if (element.getAttribute("class") == "mr_container") {
+    if (element.getAttribute("class") == "kanjidic2_mr_container") {
         new_clipboard_text = element.children[0].textContent;
     } else { new_clipboard_text = element.textContent; }
     
