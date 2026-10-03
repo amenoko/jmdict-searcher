@@ -340,7 +340,12 @@ async function searchXML(search_word, display_search_term_header) {
                 new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
                 new_html_element.setAttribute("class", "kanjidic2_meanings");
                 mr_container.appendChild(new_html_element);
-                add_clipboard_event(new_html_element);
+                //add_clipboard_event(new_html_element);
+                mr_container.addEventListener("click", (event) => {
+                    navigator.clipboard.writeText(new_html_element.textContent);
+                    console.log("clipboard: " + new_html_element.textContent);
+                    notification("Copied to clipboard: " + new_html_element.textContent);
+                });
 
                 // readings
                 kanji_readings = characters[p].getElementsByTagName("reading");
@@ -790,8 +795,6 @@ function add_clipboard_event(element) {
         console.log("clipboard: " + event.target.textContent);
         notification("Copied to clipboard: " + event.target.textContent, event.pageX, event.pageY);
     });
-
-
 }
 
 // NOTIFICATION TOAST
