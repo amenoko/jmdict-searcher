@@ -460,6 +460,14 @@ input, #search_field_parent  {
     80% {box-shadow: 0px 0px 3px 3px #ffffff44;}
 }
 
+.activate {
+    animation: activation 0.5s !important;
+}
+
+@keyframes activation {
+    5% { filter:drop-shadow(0px 0px 15px var(--accent)); }
+    0, 100% { filter:drop-shadow(1px 1px 1px #00000000); }
+}
 
 /* minor adjustments for small viewports/phones */
 @media (max-width: 800px) {
