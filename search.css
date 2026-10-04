@@ -278,7 +278,6 @@ input, #search_field_parent  {
 }
 :is(#clear, #search_button, #paste, #clear_paste, #light_mode_button, #two_column_button):hover {
     background-color: var(--bg3);
-    color: var(--fgh);
 }
 
 #search_button, #paste, #clear_paste, #search_field_parent,
