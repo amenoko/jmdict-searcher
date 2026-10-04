@@ -165,7 +165,7 @@ async function init() {
         const response = await fetch("JMdict.xml.gz");
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
-            ui_log("init(): fetch(\"JMdict_stripped.xml.gz\") failed: " + response.status);
+            ui_log("init(): fetch(\"JMdict.xml.gz\") failed: " + response.status);
         }
 
         const result = await response.arrayBuffer();
@@ -739,7 +739,6 @@ async function searchXML(search_word, display_search_term_header) {
 
 // SEARCH COMMANDER
 async function searchexec(optional_string, pushstate) {
-    update_search_label();
     if (pushstate == null) { pushstate=true; }
 
     // for safety, if we were passed a string, prioritize it over search field
@@ -763,6 +762,7 @@ async function searchexec(optional_string, pushstate) {
         }
         await status_update("");
         document.getElementsByTagName("title")[0].textContent = "JMdict Searcher";
+        update_search_label();
         return;
     }
 
