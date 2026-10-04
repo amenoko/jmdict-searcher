@@ -162,10 +162,10 @@ async function init() {
     //status_update("Loading JMdict");
     ui_log("init(): begin");
     try {
-        const response = await fetch("JMdict.xml.gz");
+        const response = await fetch("JMdict_stripped.xml.gz");
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
-            ui_log("init(): fetch(\"JMdict.xml.gz\") failed: " + response.status);
+            ui_log("init(): fetch(\"JMdict_stripped.xml.gz\") failed: " + response.status);
         }
 
         const result = await response.arrayBuffer();
