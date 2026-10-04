@@ -43,7 +43,8 @@ body, #search_button,
 .senses_block_container, .senses_block_container_de,
 .senses_glosses, .senses_container, .meanings_readings,
 .row_container, .kanji_mr_container,
-.results_container_column_inside
+.results_container_column_inside, #light_mode_button,
+#two_column_button
 { font-size: 14px; }
 #search_field, .search_term_header, .reb_white
 { font-size: 18px; }
@@ -89,12 +90,12 @@ body, #search_button,
     { margin-top:6px; }
 .row_container, #greeting
     { padding: 6px; }
-#search_button
+#search_button, #light_mode_button, #two_column_button
     { padding: 6px;}
 /* for horizontal lists, margin-right */
 #search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
     { margin-right: 6px; }
-.keb, .k_ele_freq, .k_ele_other, .senses_german_lead:first-child
+.keb, .k_ele_freq:not(#greeting_inner > .k_ele_freq), .k_ele_other, .senses_german_lead:first-child
     { margin-right: 5px; }
 .kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
     { margin-right:8px;}
@@ -275,19 +276,20 @@ input, #search_field_parent  {
     color: var(--fg1);
     transition: all 0.5 ease;
 }
-:is(#clear, #search_button, #paste, #clear_paste):hover {
+:is(#clear, #search_button, #paste, #clear_paste, #light_mode_button, #two_column_button):hover {
     background-color: var(--bg3);
     color: var(--fgh);
 }
 
-#search_button, #paste, #clear_paste, #search_field_parent {
+#search_button, #paste, #clear_paste, #search_field_parent,
+#light_mode_button, #two_column_button {
     border: solid 1px;
     border-color: var(--accent);
     border-radius:4px;
 }
 #clear_paste, #paste { white-space:normal;}
 
-:is(#search_button, #paste, #clear, #clear_paste):active {
+:is(#search_button, #paste, #clear, #clear_paste, #light_mode_button, #two_column_button):active {
     background-color: var(--accent);
     color: var(--bg1);
 }
