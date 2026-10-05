@@ -9,7 +9,62 @@
         <script src="pako.min.js"></script>
         <script language="JavaScript" type="text/javascript">
 
-// conversion table
+
+function keywordbox_add (search_word, disabled) {
+    box = document.createElement("div");
+    box.textContent = search_word;
+    if (disabled == null) { disabled == false; }
+    if (!disabled) { box.setAttribute("class", "keywordbox"); }
+    else { console.log("keywordbox_add(): setting \"grey\" class"); box.setAttribute("class", "keywordbox grey"); }
+    document.getElementById("search_field").before(box);
+    x = document.createElement("input");
+    x.value=" ";
+    x.setAttribute("type", "submit");
+    x.setAttribute("class","keywordbox_x");
+    x.addEventListener("click", (xevent) => {
+        xevent.target.parentElement.remove();
+        update_search_label();
+    });
+    box.appendChild(x);
+    //setTimeout(() => { document.getElementById("search_field").value = ""; }, 50);
+    // do normally until convinced otherwise
+    document.getElementById("search_field").value = "";
+}
+
+function keywordbox_init() {
+    document.getElementById("search_field").addEventListener("keydown", (event) => {
+        console.log(event.key);
+        if (event.key == "Space" || event.key == " ") {
+            if (event.target.value.match(/^\s*$/) == null) {
+                keywordbox_add(event.target.value.trim());
+            } else { event.target.value == "" ; }
+        } else if (event.key == "Backspace") {
+            if(event.target.value == "") {
+                document.getElementsByClassName("keywordbox")[document.getElementsByClassName("keywordbox").length - 1].remove();
+            }
+        }
+        update_search_label();
+    });
+
+    url_query_params = new URLSearchParams(window.location.search);
+    url_query_search_word = url_query_params.get('q');
+    console.log("keywordbox_init(): url_query_search_word = " + url_query_search_word);
+    console.log("keywordbox_init(): url_query_params = " + url_query_params);
+    if (url_query_search_word != null && url_query_search_word.match(/^\s*$/) == null) {
+        search_words_array = url_query_search_word.split(/\s+/);
+        console.log("keywordbox_init(): search_words_array.length = " + search_words_array.length);
+        for (b=0;b<search_words_array.length;b++) {
+            console.log("keywordbox_init(): keywordbox_add(\"" + search_words_array[b] + "\")");
+            keywordbox_add(search_words_array[b], true);
+        }
+    }
+    // we run searchexec() no matter if keywords or not, because it'll display greeting screen
+    searchexec();
+}
+
+
+
+        // conversion table
 hiratable = ["しょ","しぇ","しゅ","しゃ","ちょ","ちぇ","ちゅ","ちゃ","じょ","じぇ","じゅ","じゃ","りょ","りゅ","りゃ","みょ","みゅ","みゃ","ひょ","ひゅ","ひゃ","にょ","にゅ","にゃ","ぎょ","ぎゅ","ぎゃ","きょ","きゅ","きゃ","ぞ","ぜ","ず","じ","じ","ざ","ど","で","づ","ぢ","だ","ご","げ","ぐ","ぎ","が","を","わ","ろ","れ","る","り","ら","よ","ゆ","や","も","め","む","み","ま","ほ","へ","ふ","ふ","ひ","は","の","ね","ぬ","に","な","と","て","つ","つ","ち","ち","た","そ","せ","す","し","し","さ","こ","け","く","き","か","お","え","う","い","あ","ん","ん"];
 romatable = ["sho","she","shu","sha","cho","che","chu","cha","jo","je","ju","ja","ryo","ryu","rya","myo","myu","mya","hyo","hyu","hya","nyo","nyu","nya","gyo","gyu","gya","kyo","kyu","kya","zo","ze","zu","zi","ji","za","do","de","dzu","dji","da","go","ge","gu","gi","ga","wo","wa","ro","re","ru","ri","ra","yo","yu","ya","mo","me","mu","mi","ma","ho","he","hu","fu","hi","ha","no","ne","nu","ni","na","to","te","tu","tsu","ti","chi","ta","so","se","su","si","shi","sa","ko","ke","ku","ki","ka","o","e","u","i","a","nn","n"];
 function roma_to_hira(input) {
@@ -117,9 +172,31 @@ async function unfocus() {
 }
 
 async function disable_input(value) {
-    if(value == null) { value = true; }
-    if (value) { document.getElementById("search_field_parent").setAttribute("class", "search_field_parent_disabled"); }
-    else       { document.getElementById("search_field_parent").setAttribute("class", ""); }
+    console.log("disable_input(): begin");
+    if(value == null) {
+        console.log("disable_input(): no param, setting value to true");
+        value = true;
+    }
+    console.log("disable_input(): value = " + value);
+    keywordbox_array = document.getElementsByClassName("keywordbox");
+    keywordbox_x_array = document.getElementsByClassName("keywordbox_x");
+    console.log("disable_input(): keywordbox_array.length = " + keywordbox_array.length);
+    console.log("disable_input(): keywordbox_x_array.length = " + keywordbox_x_array.length);
+    if (value) {
+        console.log("disable_input(): value is true, disabling stuff");
+        document.getElementById("search_field_parent").setAttribute("class", "search_field_parent_disabled");
+        for (let m=0;m<keywordbox_array.length;m++) {
+            keywordbox_array[m].setAttribute("class", "keywordbox grey");
+        }
+    } else {
+        console.log("disable_input(): value is false, un-disabling stuff");
+        document.getElementById("search_field_parent").setAttribute("class", "");
+        for (let m=0;m<keywordbox_array.length;m++) {
+            keywordbox_array[m].setAttribute("class", "keywordbox");
+        }
+    }
+
+    for (let m=0;m<keywordbox_x_array.length;m++) { keywordbox_x_array[m].disabled = value; }
     document.getElementById("search_field").disabled = value;
     document.getElementById("search_button").disabled = value;
     document.getElementById("paste").disabled = value;
@@ -131,20 +208,21 @@ async function disable_input(value) {
 
 function clear_input() {
     document.getElementById("search_field").value = "";
+    while(keywordbox_array[0]) {
+        keywordbox_array[0].remove();
+    }
     focus();
     update_search_label();
 }
 
 // dynamically display "home" to indicate clicking the button returns user to home page (greeting)
 function update_search_label() {
-    console.log("search_field length: " + document.getElementById("search_field").value.length);
-    console.log("search_field contents: \"" + document.getElementById("search_field").value + "\"");
     search_button = document.getElementById("search_button");
     // if front page is visible always display "Search"
     if (document.getElementById("greeting_container").style.display != "none") {
         search_button.value = "Search";
     } else {
-        if (document.getElementById("search_field").value.length == 0) {
+        if (document.getElementById("search_field").value.match(/^\s*$/) != null && document.getElementsByClassName("keywordbox").length == 0) {
             search_button.value = "Home";
         } else { search_button.value = "Search"; }
     }
@@ -156,6 +234,9 @@ jm_date = "";
 // kanjidic2
 let xmlDoc_kanji = null;
 kanji_date = "";
+
+// used for determining whether to focus after a search
+tracker_no_results = false;
 
 // INIT
 async function init() {
@@ -200,22 +281,6 @@ async function init() {
         ui_log("init(): DomParser() for kanjidic2");
         xmlDoc_kanji = new window.DOMParser().parseFromString(inflated, "text/xml");
 
-        // if url has keyword, use them
-        // url_query_params = new URLSearchParams(window.location.search);
-        // url_query_search_word = url_query_params.get('q');
-        if (url_query_search_word) {
-            console.log("url keywords: " + url_query_search_word);
-            ui_log("init(): url keywords found (\"" + url_query_search_word + "\"), running searchexec()");
-            //document.getElementById("search_field").value = url_query_search_word;
-            await disable_input();
-            await status_update("Searching");
-            searchexec();
-        } else {
-            focus();
-            await status_update("");
-            results_container = document.getElementById("greeting_container");
-            results_container.style.setProperty("display", "block");
-        }
         console.log("loaded kanjidic2");
         kanji_date = xmlDoc_kanji.getElementsByTagName("date_of_creation")[0].textContent;
 
@@ -250,9 +315,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     console.log("DOMContentLoaded");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
-    document.getElementById("search_field").value = url_query_search_word;
     ui_log("Calling init()...<br>");
     init_status = await init();
+    ui_log("Calling keywordbox_init()... <br>");
+    await keywordbox_init();
     if(init_status == 1) {
         status_update("Failed to load JMdict");
         ui_log("init() returned 1: Failed to load JMdict");
@@ -263,8 +329,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     } else {
         ui_log("init() returned 0: success");
     }
-    // if search is queued by URL params, don't free search field; searchexec() does it when it's done
-    if(url_query_search_word == null) { await disable_input(false); }
+
 
     greeting_iframe = document.getElementById("greeting_container");
     modified = new Date(document.lastModified);
@@ -289,18 +354,19 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.head.appendChild(e);
     });
     ui_log("");
+    if(url_query_search_word == null) { await disable_input(false); }
 }, false);
 
 //iframe_counter = 0; // for self-identification
 
 // CORE LOGIC / SEARCHER
 async function searchXML(search_word, display_search_term_header) {
-    console.log("searchXML begin, search_word = " + search_word);
+    console.log("searchXML(): begin, search_word = " + search_word);
     results_container = document.getElementById("results_container");
     results_container.style.setProperty("display", "flex");
 
     if (search_word === null || search_word.match(/^ *$/) !== null) {
-        console.log("empty, quitting");
+        console.log("searchXML(): empty, quitting");
         return;
     }
     found=false;
@@ -722,8 +788,8 @@ async function searchXML(search_word, display_search_term_header) {
         no_results.textContent = "No results for \"" + search_word + "\"";
         no_results.setAttribute("class", "no_results");
         results_container_column.body.appendChild(no_results);
-        focus();
-    }
+        tracker_no_results = true;
+    } else { tracker_no_results = false; }
 
     // if there are multiple searches, display search term
     // at the top
@@ -740,16 +806,24 @@ async function searchXML(search_word, display_search_term_header) {
 // SEARCH COMMANDER
 async function searchexec(optional_string, pushstate) {
     if (pushstate == null) { pushstate=true; }
+    console.log("searchexec(" + optional_string + ", " + pushstate + ")");
 
+    search_field_contents = document.getElementById("search_field").value;
+    document.getElementById("search_field").value = "";
+    if (search_field_contents != null && search_field_contents.match(/^\s*$/) == null) {
+        console.log("search field was not empty, adding keywordbox for \"" + search_field_contents + "\"");
+        await keywordbox_add(search_field_contents);
+    }
     // for safety, if we were passed a string, prioritize it over search field
     // worried about race conditions, I dunno
-    if (optional_string == null || optional_string == "" || optional_string.match(/^ *$/) == null) {
-        search_field_contents = document.getElementById("search_field").value;
-    } else { search_field_contents = optional_string; }
+    is_direct_search = false;
+    if (optional_string != null) {
+        is_direct_search = true;
+        console.log("searchexec(): is direct search");
+    } else { console.log("searchexec(): is not direct search"); }
 
-    console.log("search_field_contents = " + search_field_contents);
-    if (search_field_contents == null || search_field_contents.match(/^ *$/) != null) {
-        console.log("Empty, quitting");
+    if (document.getElementsByClassName("keywordbox").length == 0 && optional_string == null) {
+        console.log("searchexec(): no search terms, quitting");
         document.getElementById("results_count").textContent = "";
         document.getElementById("greeting_container").style.setProperty("display", "block");
         document.getElementById("results_container").style.setProperty("display", "none");
@@ -766,11 +840,24 @@ async function searchexec(optional_string, pushstate) {
         return;
     }
 
-    if(search_field_contents.match(/[a-zA-Z]/g) != null) {
-        console.log("searchexec(): attempting to convert to hiragana");
-        search_field_contents = roma_to_hira(search_field_contents);
-        document.getElementById("search_field").value = search_field_contents;
+    // build search string (containing all key word strings, separated by spaces)
+    full_search_string="";
+    if (is_direct_search) { full_search_string = optional_string; }
+    else  {
+        keywordbox_array = document.getElementsByClassName("keywordbox");
+        console.log("searchexec(): keywordbox_array.length = " + keywordbox_array.length);
+        for (v=0;v<keywordbox_array.length;v++) {
+            console.log("searchexec(): adding \"" + keywordbox_array[v].textContent + "\" to full_search_string");
+            full_search_string += keywordbox_array[v].textContent + " ";
+            console.log("searchexec(): full_search_string = " + full_search_string);
+        }
+        full_search_string = full_search_string.slice(0,-1);
     }
+
+
+    search_array = full_search_string.split(/\s+/);
+    console.log("searchexec(): full_search_string = " + full_search_string);
+    console.log("searchexec(): search_array.length = " + search_array.length);
 
     results_counter=0;
     await disable_input(true);
@@ -778,36 +865,32 @@ async function searchexec(optional_string, pushstate) {
     document.getElementById("greeting_container").style.setProperty("display", "none");
     // add search word to url
     url = new URL(window.location);
-    url.searchParams.set('q', search_field_contents);
+    url.searchParams.set('q', full_search_string);
     if (pushstate) { window.history.pushState({}, '', url); }
 
     if (display_counter) {await results_counter_update(results_counter);}
-    search_array= search_field_contents.trim().split(/\s+/);
+
     document.getElementById("results_container").innerHTML = "";
     await status_update("Searching");
     document.getElementsByTagName("title")[0].textContent = "";
     if(search_array.length > 1) { multisearch=true; } else { multisearch=false; }
-
-    for (let x=0;x<search_array.length;x++) {
-        console.log("Calling searchXML(\"" + search_array[x] + "\")");
-        if (search_array[x] !== null || search_array[x].match(/^ *$/) == null) {
-            /* setTimeout(function() {
-            searchXML(search_array[x]);
-            }, 100); */
-            if (x == 0) {
-                document.getElementsByTagName("title")[0].textContent += search_array[x];
-            } else {
-                document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
+        for (let x=0;x<search_array.length;x++) {
+            console.log("Calling searchXML(\"" + search_array[x].textContent + "\")");
+            if (search_array[x] !== null) {
+                if (x == 0) {
+                    document.getElementsByTagName("title")[0].textContent += search_array[x];
+                } else {
+                    document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
+                }
+                await searchXML(search_array[x], multisearch);
+                await disable_input(false);
+                if (display_counter) {await results_counter_update(results_counter);}
             }
-            await searchXML(search_array[x], multisearch);
-            await disable_input(false);
-            if (display_counter) {await results_counter_update(results_counter);}
         }
-    }
-    if (window.innerWidth > 800) { focus(); }
+    if (tracker_no_results) { focus(); }
+    else { document.getElementsByClassName("results_container_column")[0].focus(); }
     await status_update("");
-    //document.getElementById("search_field").focus(); annoying on mobile, as it turns out
-    console.log("searchexec() end");
+    console.log("searchexec(): end");
 }
 
 // PASTE LOGIC
@@ -815,19 +898,12 @@ async function paste(replace) {
     navigator.clipboard
     .readText()
         .then((cliptext) => {
-        // if search bar isn't empty, paste content with space; unless called by clear&paste
-        new_search = "";
-        if (replace) { new_search = cliptext; document.getElementById("search_field").value = new_search; }
-        else {
-            if (document.getElementById("search_field").value == null || document.getElementById("search_field").value == "" ) {
-                new_search = cliptext;
-                document.getElementById("search_field").value = new_search;
-            } else {
-                new_search = document.getElementById("search_field").value + " " + cliptext;
-                document.getElementById("search_field").value = new_search;
-            }
+        if (replace) {
+            clear_input();
         }
-        searchexec(new_search);
+        new_search_array=cliptext.split(/\s+/);
+        for (u=0;u<new_search_array.length;u++) { keywordbox_add(new_search_array[u]); }
+        searchexec();
     });
     update_search_label();
 }
@@ -843,17 +919,18 @@ window.addEventListener('popstate', async function(event) {
     console.log("popstate event");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
-    document.getElementById("search_field").value = url_query_search_word;
+    clear_input();
+    search_words_array = url_query_search_word.split(/\s+/);
+    for (u=0;u<search_words_array.length;u++) {
+        keywordbox_add(search_words_array[u]);
+    }
     searchexec(url_query_search_word, false); // do not push state
 });
 
 // FOCUS SEARCHBAR ON KEYPRESS
 function add_keydown_event(element) {
-    console.log("add_keydown_event(): " + element.tagName);
     element.addEventListener("keydown", (e) => {
         update_search_label();
-        console.log("keydown_event_listener: " + e.key);
-        console.log("keydown_event_listener: " + e.tagName + ", " + e.textContent);
         let x = e.key;
         //if (x.match(/[a-zA-Z ]/) != null) {
         if(x != "ArrowUp"
@@ -862,7 +939,8 @@ function add_keydown_event(element) {
         && x != "End"
         && x != "PageDown"
         && x != "PageUp"
-        ) { console.log("focusing search field"); focus(); }
+        ) { focus(); }
+        else { document.getElementsByClassName("results_container_column")[0].focus(); }
 
         if (x == "Insert" || x == "ScrollLock" || x == "Pause") { light_mode(); }
     });
@@ -986,7 +1064,7 @@ function global_css_var(name, value, target_iframe) {
         <input type="submit" value="Paste & Go (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
         <div id="search_field_parent" class="search_field_parent_disabled">
             <input type="text" name="literal" id="search_field" disabled>
-            <input type="submit" value="⨉" onClick="clear_input()" id="clear" disabled>
+            <input type="submit" value=" " onClick="clear_input()" id="clear" disabled>
         </div>
         <input type="submit" value="Search" onClick="searchexec()" id="search_button" disabled>
         <div id="status">Please wait...</div>
