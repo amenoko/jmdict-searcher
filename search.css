@@ -343,6 +343,7 @@ input, #search_field_parent  {
 #search_field {
     border:none !important;
     min-width:0px;
+    outline: none;
 }
 #search_field:hover { background:none; }
 
