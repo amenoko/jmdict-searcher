@@ -60,7 +60,7 @@ body, #search_button,
 .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou
 { font-size: 10px; }
 .kanjidic2_link_container
-{ font-size: 8px; }
+{ font-size: 12px; }
 .reb, .senses_german, .senses_german_lead,
 .senses_extras, .kanjidic2_meanings, .kanjidic2_readings
 { font-size: 12px; }
@@ -407,7 +407,7 @@ input, #search_field_parent  {
     margin-left: 5px;
     display:flex;
     font-family: BR Wakaisho;
-    font-size:14px;
+    font-size:16px;
     height:fit-content;
     place-items:center;
     color: var(--accent);
