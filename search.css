@@ -46,7 +46,7 @@ body, #search_button,
 .results_container_column_inside, #light_mode_button,
 #two_column_button
 { font-size: 14px; }
-#search_field, .search_term_header, .reb_white
+#search_field, .search_term_header, .reb_white, .keywordbox
 { font-size: 18px; }
 #clear_paste, #paste
 { font-size: 10px; }
@@ -71,7 +71,7 @@ body, #search_button,
     #clear_paste, #paste
     { font-size: 12px; }
     #greeting_inner
-    { font-size: 10px; }
+    { font-size: 12px; }
 }
 /* FONT SIZES END */
 
@@ -117,7 +117,7 @@ body, #search_button,
     position:fixed;
     top: 80px;
     display:none;
-    transition: all 0.5s;
+    transition: all 0.3s linear;
     width: 50%;
     left:25%;
     text-align:center;
@@ -130,14 +130,12 @@ body, #search_button,
     border-radius: 4px;
     box-shadow: 0px 0px 15px 0px black;
     border:1px solid;
-    opacity:0;
     font-family: BR Wakaisho, brw;
-    animation: notif_fadeout 1s ease-in;
     width:100%;
 }
 
 @keyframes notif_fadeout {
-    0%, 50% { opacity:1; }
+    0%, 80% { opacity:1; }
     100% { opacity:0; }
 }
 
@@ -407,7 +405,6 @@ input, #search_field_parent  {
     margin-left: 5px;
     display:flex;
     font-family: BR Wakaisho;
-    font-size:16px;
     height:fit-content;
     place-items:center;
     color: var(--accent);

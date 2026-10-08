@@ -11,39 +11,80 @@
 
 
 function keywordbox_add (search_word, disabled) {
-    box = document.createElement("div");
-    box.textContent = search_word;
-    if (disabled == null) { disabled == false; }
-    if (!disabled) { box.setAttribute("class", "keywordbox"); }
-    else { console.log("keywordbox_add(): setting \"grey\" class"); box.setAttribute("class", "keywordbox grey"); }
-    document.getElementById("search_field").before(box);
-    x = document.createElement("input");
-    x.value=" ";
-    x.setAttribute("type", "submit");
-    x.setAttribute("class","keywordbox_x");
-    x.addEventListener("click", (xevent) => {
-        xevent.target.parentElement.remove();
-        update_search_label();
-    });
-    box.appendChild(x);
-    //setTimeout(() => { document.getElementById("search_field").value = ""; }, 50);
-    // do normally until convinced otherwise
-    document.getElementById("search_field").value = "";
+    // if user pastes string with spaces, trim and split it here
+    keyword_array = search_word.trim().split(/\s+/);
+    if (keyword_array != "") {
+        for (q=0;q<keyword_array.length;q++) {
+            box = document.createElement("div");
+            box.textContent = keyword_array[q];
+            if (disabled == null) { disabled == false; }
+            if (!disabled) { box.setAttribute("class", "keywordbox"); }
+            else { box.setAttribute("class", "keywordbox grey"); }
+
+            document.getElementById("search_field").before(box);
+            x = document.createElement("input");
+            x.value=" ";
+            x.setAttribute("type", "submit");
+            x.setAttribute("class","keywordbox_x");
+            x.addEventListener("click", (xevent) => {
+                xevent.target.parentElement.remove();
+            });
+            box.appendChild(x);
+        }
+        setTimeout(() => {
+            document.getElementById("search_field").value = "";
+            update_search_label();
+        }, 100);
+    }
 }
 
+// last cursor position
+last_cur_pos=0;
 function keywordbox_init() {
     document.getElementById("search_field").addEventListener("keydown", (event) => {
-        console.log(event.key);
-        if (event.key == "Space" || event.key == " ") {
-            if (event.target.value.match(/^\s*$/) == null) {
+        console.log("search_field keydown event: " + event.key);
+        if (event.key == "Space" || event.key == " " || event.key == "ArrowRight") {
+            if (event.target.value.match(/^\s*$/) == null && event.target.selectionStart == event.target.value.length) {
                 keywordbox_add(event.target.value.trim());
+                event.target.value = event.target.value.slice(0,-1);
             } else { event.target.value == "" ; }
-        } else if (event.key == "Backspace") {
+        } /*else if (event.key == "Backspace") {
             if(event.target.value == "") {
                 document.getElementsByClassName("keywordbox")[document.getElementsByClassName("keywordbox").length - 1].remove();
+            }*/
+        //}
+
+        // pop rightmost/newest box back in
+        setTimeout(() => {
+            boxes = document.getElementsByClassName("keywordbox");
+            if (boxes.length > 0 && event.target.selectionStart == 0 && last_cur_pos == 0) {
+                last_text = boxes[boxes.length-1].textContent;
+                if (event.key == "ArrowLeft") {
+                    if (event.target.value == "" ) {
+                        event.target.value = last_text;
+                    } else {
+                        event.target.value = last_text + " " + event.target.value;
+                    }
+                    boxes[boxes.length-1].remove();
+                    event.target.selectionStart = last_text.length - 1;
+                    event.target.selectionEnd = last_text.length - 1;
+
+                } else if (event.key == "Backspace") {
+                    if (event.target.value == "" ){
+                        event.target.value = last_text.slice(0,-1);
+                    } else {
+                        event.target.value = last_text.slice(0,-1) + " " + event.target.value;
+                    }
+                    event.target.selectionStart = event.target.value.length;
+                    event.target.selectionEnd = event.target.value.length;
+                    boxes[boxes.length-1].remove();
+                }
             }
-        }
-        update_search_label();
+            event.target.value = event.target.value.trim();
+            last_cur_pos = event.target.selectionStart;
+            update_search_label();
+        },100);
+        //setTimeout( () => { update_search_label(); }, 100);
     });
 
     url_query_params = new URLSearchParams(window.location.search);
@@ -57,6 +98,7 @@ function keywordbox_init() {
             console.log("keywordbox_init(): keywordbox_add(\"" + search_words_array[b] + "\")");
             keywordbox_add(search_words_array[b], true);
         }
+        notification("URL keywords: " + url_query_search_word);
     }
     // we run searchexec() no matter if keywords or not, because it'll display greeting screen
     searchexec();
@@ -88,9 +130,9 @@ function roma_to_hira(input) {
         if (!piece_matched) {
             for (let r=0;r<romatable.length;r++) {
                 if (input_string.slice(0,3) == romatable[r]) {
-                    console.log(input_string.slice(0,3) + " matches " + romatable[r]);
+                    console.log("roma_to_hira(): " + input_string.slice(0,3) + " matches " + romatable[r]);
                     output += hiratable[r];
-                    console.log("output = " + output);
+                    console.log("roma_to_hira(): output = " + output);
                     input_string = input_string.slice(3);
                     piece_matched = true;
                     r=romatable.length; // break out of this for loop
@@ -100,7 +142,7 @@ function roma_to_hira(input) {
         if (!piece_matched) {
             for (let r=0;r<romatable.length;r++) {
                 if (input_string.slice(0,2) == romatable[r]) {
-                    console.log(input_string.slice(0,2) + " matches " + romatable[r]);
+                    console.log("roma_to_hira(): " + input_string.slice(0,2) + " matches " + romatable[r]);
                     output += hiratable[r];
                     input_string = input_string.slice(2);
                     piece_matched = true;
@@ -112,7 +154,7 @@ function roma_to_hira(input) {
         if (!piece_matched) {
             for (let r=0;r<romatable.length;r++) {
                 if (input_string.slice(0,1) == romatable[r]) {
-                    console.log(input_string.slice(0,1) + " matches " + romatable[r]);
+                    console.log("roma_to_hira(): " + input_string.slice(0,1) + " matches " + romatable[r]);
                     output += hiratable[r];
                     input_string = input_string.slice(1);
                     piece_matched = true;
@@ -156,8 +198,9 @@ async function status_update(text) {
 
 async function focus(animate) {
     if (animate == null) { animate = true; }
+    console.log("focus()")
 
-    if (document.getElementById("search_field"). disabled == true) { animate = false; }
+    if (document.getElementById("search_field").disabled == true) { animate = false; }
 
     if (document.activeElement != document.getElementById("search_field") && animate) {
         document.getElementById("search_field_parent").setAttribute("class", "activate");
@@ -250,7 +293,7 @@ async function init() {
         }
 
         const result = await response.arrayBuffer();
-        console.log(result);
+        console.log("init(): " + result);
         inflateme = new Uint8Array(result);
         ui_log("init(): pako.gunzip() JMdict");
         inflated = pako.ungzip(inflateme,{ 'to': 'string' });
@@ -258,11 +301,11 @@ async function init() {
         xmlDoc_jm = new window.DOMParser().parseFromString(inflated, "text/xml");
         focus();
         jm_date = inflated.match(/(?<=<!-- JMdict created..).*(?= -->)/)[0];
-        console.log("loaded Jmdict, dated: " + jm_date);
+        console.log("init(): loaded Jmdict, dated: " + jm_date);
 
     } catch (error) {
         console.error(error.message);
-        ui_log("init() error: " + error.message);
+        ui_log("init(): error: " + error.message);
         return 1;
     }
 
@@ -274,19 +317,19 @@ async function init() {
         }
 
         const result = await response.arrayBuffer();
-        console.log(result);
+        console.log("init(): " + result);
         inflateme = new Uint8Array(result);
         ui_log("init(): pako.gunzip() kanjidic2");
         inflated = pako.ungzip(inflateme,{ 'to': 'string' });
         ui_log("init(): DomParser() for kanjidic2");
         xmlDoc_kanji = new window.DOMParser().parseFromString(inflated, "text/xml");
 
-        console.log("loaded kanjidic2");
+        console.log("init(): loaded kanjidic2");
         kanji_date = xmlDoc_kanji.getElementsByTagName("date_of_creation")[0].textContent;
 
     } catch (error) {
         console.error(error.message);
-        ui_log("init() error: " + error.message);
+        ui_log("init(): error: " + error.message);
         return 2;
     }
     ui_log("init(): end");
@@ -312,7 +355,7 @@ function ui_log (text) {
 document.addEventListener('DOMContentLoaded', async function () {
     // if reload, disable input
     window.onbeforeunload = disable_input();
-    console.log("DOMContentLoaded");
+    console.log("DOMContentLoaded event: ");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
     ui_log("Calling init()...<br>");
@@ -376,7 +419,7 @@ async function searchXML(search_word, display_search_term_header) {
     new_iframe.style.setProperty("display", "none");
 
     // push newer searches to top
-    console.log("results_container.childElementCount = " + results_container.childElementCount);
+    console.log("searchXML(): results_container.childElementCount = " + results_container.childElementCount);
     if (results_container.childElementCount == 0 ) {
         results_container.appendChild(new_iframe);
     } else {
@@ -412,7 +455,7 @@ async function searchXML(search_word, display_search_term_header) {
             // each <character> has only 1 <literal> entry (I checked)
             kanji_literal = characters[p].getElementsByTagName("literal")[0].textContent;
             if (search_word.includes(kanji_literal)) {
-                console.log("found character: " + kanji_literal);
+                console.log("searchXML(): found character: " + kanji_literal);
                 found_kanji=true;
             }
 
@@ -536,7 +579,7 @@ async function searchXML(search_word, display_search_term_header) {
             if(element.textContent.includes(search_word)) {
                 found=true;
                 if (element.textContent == search_word) {
-                    console.log("exact keb match:" + element.textContent);
+                    console.log("searchXML(): exact keb match: " + element.textContent);
                     exact_keb_match=true;
                 }
             }
@@ -546,7 +589,7 @@ async function searchXML(search_word, display_search_term_header) {
             if(element.textContent.includes(search_word)) {
                 found=true;
                 if (element.textContent == search_word) {
-                    console.log("exact reb match" + element.textContent);
+                    console.log("searchXML(): exact reb match" + element.textContent);
                     exact_reb_match=true;
                 }
             }
@@ -782,7 +825,7 @@ async function searchXML(search_word, display_search_term_header) {
         results_container_column.body.children[0].before(toomanyresults);
     }
 
-    console.log("results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
+    console.log("searchXML(): results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
     if(results_container_column.body.childElementCount < 2 && row_prio_container.childElementCount == 0) {
         no_results = results_container_column.createElement("div");
         no_results.textContent = "No results for \"" + search_word + "\"";
@@ -811,7 +854,7 @@ async function searchexec(optional_string, pushstate) {
     search_field_contents = document.getElementById("search_field").value;
     document.getElementById("search_field").value = "";
     if (search_field_contents != null && search_field_contents.match(/^\s*$/) == null) {
-        console.log("search field was not empty, adding keywordbox for \"" + search_field_contents + "\"");
+        console.log("searchexec(): search field was not empty, adding keywordbox for \"" + search_field_contents + "\"");
         await keywordbox_add(search_field_contents);
     }
     // for safety, if we were passed a string, prioritize it over search field
@@ -856,8 +899,8 @@ async function searchexec(optional_string, pushstate) {
 
 
     search_array = full_search_string.split(/\s+/);
-    console.log("searchexec(): full_search_string = " + full_search_string);
-    console.log("searchexec(): search_array.length = " + search_array.length);
+    console.log("searchexec(): full_search_string = \"" + full_search_string + "\"");
+    console.log("searchexec(): search_array.length = \"" + search_array.length + "\"");
 
     results_counter=0;
     await disable_input(true);
@@ -875,7 +918,7 @@ async function searchexec(optional_string, pushstate) {
     document.getElementsByTagName("title")[0].textContent = "";
     if(search_array.length > 1) { multisearch=true; } else { multisearch=false; }
         for (let x=0;x<search_array.length;x++) {
-            console.log("Calling searchXML(\"" + search_array[x].textContent + "\")");
+            console.log("searchexec(): Calling searchXML(\"" + search_array[x] + "\")");
             if (search_array[x] !== null) {
                 if (x == 0) {
                     document.getElementsByTagName("title")[0].textContent += search_array[x];
@@ -927,48 +970,133 @@ window.addEventListener('popstate', async function(event) {
     searchexec(url_query_search_word, false); // do not push state
 });
 
-// FOCUS SEARCHBAR ON KEYPRESS
+
+
+// SITE-WIDE KEY INPUT HANDLER
+// originally just for focusing search bar, now additionally
+// having to emulate CTRL+A textbox behavior after adding keywordboxes
+// (great idea)
+ctrl_a = 0; // 0 - nothing pressed, 1 - pressed control, 2 - pressed "a" after pressing control
 function add_keydown_event(element) {
     element.addEventListener("keydown", (e) => {
         update_search_label();
         let x = e.key;
-        //if (x.match(/[a-zA-Z ]/) != null) {
         if(x != "ArrowUp"
         && x != "ArrowDown"
         && x != "Home"
         && x != "End"
         && x != "PageDown"
         && x != "PageUp"
-        ) { focus(); }
-        else { document.getElementsByClassName("results_container_column")[0].focus(); }
+        ) {
+            console.log("keydown event: calling focus() (focus search bar)");
+            focus();
+        }
+        else {
+            console.log("keydown event: focusing results_container_column[0]");
+            document.getElementsByClassName("results_container_column")[0].focus();
+        }
+
 
         if (x == "Insert" || x == "ScrollLock" || x == "Pause") { light_mode(); }
+
+        // to be safe, don't do ANY of this if input is currently disabled
+        if (document.getElementById("search_field").disabled == false) {
+            // track ctrl+alt+a (jank)
+            console.log("keydown event: ctrl_a == " + ctrl_a);
+            if (e.key == "Control") {
+                if (ctrl_a == 0) { ctrl_a = 1; }
+            }
+            else if (e.key == "a") {
+                if ( ctrl_a == 1 ) {
+                    console.log("keydown event: pressed \"a\"");
+                    console.log("keydown event: if next key is backspace, del or new input into search field, all previous keywordboxes will be deleted");
+                    notification("Selected all search terms (CTRL+A event)");
+                    ctrl_a = 2; // if next key is backspace, delete all keywordboxes
+                } else if (ctrl_a == 2) {
+                    // have to hard code for "a" because the "else" portion below isn't
+                    // executed if user presses "a"
+                    console.log("keydown event: pressed \"a\" after having pressed CTRL+A");
+                    // refer to duplicate below in "else" section
+                    setTimeout( () => {
+                    if (document.getElementById("search_field").value.length > 0) {
+                        console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
+                        notification("Replacing all search terms (CTRL+A event)")
+                        while(boxes[0]) {boxes[0].remove();}
+                        console.log("keydown event: trying to do some selection fuckery");
+                        frames = document.getElementsByTagName("iframe");
+                        for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
+                        ctrl_a = 0;
+                    }},100);
+                }
+            }
+            else if (e.key == "Backspace" || e.key == "Delete") {
+                if (ctrl_a == 2 || ctrl_a == 3) {
+                    console.log("keydown event: detected CTRL+A -> DEL or BACKSPACE, deleting all search terms");
+                    notification("Deleted all search terms (CTRL+A event)");
+                    boxes = document.getElementsByClassName("keywordbox");
+                    while(boxes[0]) { boxes[0].remove(); }
+                    console.log("keydown event: trying to do some selection fuckery");
+                    frames = document.getElementsByTagName("iframe");
+                    for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
+                    document.getElementById("search_field").value = "";
+                    ctrl_a = 0;
+                }
+            }
+            else {
+                // duplicate of above (a) (except for ctrl_a == 2 check)
+                setTimeout( () => {
+                if (document.getElementById("search_field").value.length > 0 && ctrl_a == 2) {
+                    console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
+                    notification("Replaced search terms (CTRL+A event)");
+                    while(boxes[0]) {boxes[0].remove();}
+                    console.log("keydown event: trying to do some selection fuckery");
+                    frames = document.getElementsByTagName("iframe");
+                    for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
+                }
+
+                // detect CTRL+V, start search if detected
+                if (e.key == "v" && ctrl_a == 1 && document.getElementById("search_field").value.length > 0) {
+                        console.log("keydown event: pressed CTRL+V, starting search");
+                        notification("Starting search (CTRL+V event)");
+                        setTimeout( () => { searchexec(); }, 100);
+                    }
+                    else if (e.key == "v" && ctrl_a == 2 && document.getElementById("search_field").value.length > 0) {
+                        console.log("keydown event: pressed CTRL+V after CTRL+A, replacing search terms and starting search");
+                        notification("Replaced search terms and starting search (CTRL+A -> CTRL+V event)");
+                        while(boxes[0]) { boxes[0].remove(); }
+                        setTimeout( () => { searchexec(); }, 100);
+                }
+                ctrl_a = 0;
+                }, 100);
+            }
+        }
     });
 }
 
 // copy to clipboard from eventhandler
 function clipboard(text) {
     navigator.clipboard.writeText(text);
-    console.log("copy to clipboard: " + text);
+    console.log("clipboard(): copy to clipboard: " + text);
 }
 
 // ADD CLIPBOARD FUNCTIONALITY
 function add_clipboard_event(element) {
     element.addEventListener("click", (event) => {
         let new_clipboard_text = "";
-        console.log("element.tagName: " + element.tagName);
+        console.log("click event: element.tagName: " + element.tagName);
         if (element.getAttribute("class") == "kanjidic2_mr_container") {
-            console.log("is kanjidic2_mr_container");
+            console.log("click event: is kanjidic2_mr_container");
             new_clipboard_text = element.children[0].textContent;
-        } else { console.log("is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
+        } else { console.log("click event: is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
 
         navigator.clipboard.writeText(new_clipboard_text);
-        console.log("clipboard: " + new_clipboard_text);
+        console.log("click event: clipboard: " + new_clipboard_text);
         notification("Copied to clipboard: " + new_clipboard_text);
     });
 }
 
 // NOTIFICATION TOAST
+notifications_visible = 0; // to track whether there already is a notification so we can keep the window open
 function notification(text, x,y) {
     notify_ele = document.getElementById("notification");
     notify_container = document.getElementById("notification_container");
@@ -976,7 +1104,19 @@ function notification(text, x,y) {
     //notify_ele.style.setProperty("left", x + "px");
     //notify_ele.style.setProperty("top", y + "px");
     notify_container.style.setProperty("display", "flex");
-    setTimeout(() => notify_container.style.setProperty("display", "none"), 1100);
+    notify_container.style.setProperty("opacity", "1");
+
+    notifications_visible++;
+    setTimeout(() => {
+        // don't close if the counter was increased beyond 1 by another notif
+        // (so the window stays open for longer)
+        if (notifications_visible <= 1) {
+            // hopefully this works lol
+            notify_container.style.setProperty("opacity", "0");
+            setTimeout( () => { notify_container.style.setProperty("display", "none"); notifications_visible = 0; }, 500);
+        }
+        else { notifications_visible--; }
+    }, 1100);
     console.log("notification(): " + text);
 }
 
