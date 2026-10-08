@@ -115,7 +115,7 @@ body, #search_button,
 
 #notification_container {
     position:fixed;
-    top: 80px;
+    bottom: 50%;
     display:none;
     transition: all 0.3s linear;
     width: 50%;

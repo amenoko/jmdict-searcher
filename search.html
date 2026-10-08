@@ -695,6 +695,7 @@ async function searchXML(search_word, display_search_term_header) {
                 else { new_html_element.setAttribute("class","reb_white"); }
 
                 new_html_element.textContent = element.textContent;
+                add_clipboard_event(new_html_element);
                 meanings_readings.appendChild(new_html_element);
             }
             meanings_readings.appendChild(k_ele_container);
@@ -726,9 +727,9 @@ async function searchXML(search_word, display_search_term_header) {
                         || senses_bit.getAttribute("xml:lang") == null
                         || senses_bit.getAttribute("xml:lang") == "" ) {
                             if (senses_bit.textContent.match(/^ *$/) == null) {
-                                if      (senses_bit.tagName == "gloss") { senses_glosses = senses_glosses + senses_bit.textContent + "; "; }
-                                else if (senses_bit.tagName == "stagk") { senses_extras = senses_extras + "only " + senses_bit.textContent + "; "; }
-                                else { senses_extras = senses_extras + senses_bit.textContent + "; "; }
+                                if      (senses_bit.tagName == "gloss") { senses_glosses = senses_glosses + senses_bit.textContent + ", "; }
+                                else if (senses_bit.tagName == "stagk") { senses_extras = senses_extras + "only " + senses_bit.textContent + ", "; }
+                                else { senses_extras = senses_extras + senses_bit.textContent + ", "; }
                             }
                         } else if (senses_bit.getAttribute("xml:lang") == "ger") {
                             german_string += senses_bit.textContent + ", ";
@@ -741,6 +742,7 @@ async function searchXML(search_word, display_search_term_header) {
                 if (senses_glosses != "") {
                     senses_glosses_element = results_container_column.createElement("div");
                     senses_glosses_element.setAttribute("class", "senses_glosses");
+                    add_clipboard_event(senses_glosses_element);
                     senses_glosses_element.textContent = senses_glosses.slice(0,-2);
                     senses_block_container.appendChild(senses_glosses_element);
                 }
@@ -847,7 +849,12 @@ async function searchXML(search_word, display_search_term_header) {
 }
 
 // SEARCH COMMANDER
+search_ongoing=false;
 async function searchexec(optional_string, pushstate) {
+    if(search_ongoing) {
+        console.log("searchexec(): a search is already ongoing, quitting");
+        return;
+    } else { search_ongoing=true; }
     if (pushstate == null) { pushstate=true; }
     console.log("searchexec(" + optional_string + ", " + pushstate + ")");
 
@@ -880,6 +887,7 @@ async function searchexec(optional_string, pushstate) {
         await status_update("");
         document.getElementsByTagName("title")[0].textContent = "JMdict Searcher";
         update_search_label();
+        search_ongoing=false;
         return;
     }
 
@@ -933,6 +941,7 @@ async function searchexec(optional_string, pushstate) {
     if (tracker_no_results) { focus(); }
     else { document.getElementsByClassName("results_container_column")[0].focus(); }
     await status_update("");
+    search_ongoing=false;
     console.log("searchexec(): end");
 }
 
@@ -987,13 +996,14 @@ function add_keydown_event(element) {
         && x != "End"
         && x != "PageDown"
         && x != "PageUp"
+        && x != "Control"
         ) {
             console.log("keydown event: calling focus() (focus search bar)");
             focus();
         }
         else {
             console.log("keydown event: focusing results_container_column[0]");
-            document.getElementsByClassName("results_container_column")[0].focus();
+            if (document.getElementsByClassName("results_container_column")[0]) { document.getElementsByClassName("results_container_column")[0].focus(); }
         }
 
 
@@ -1077,21 +1087,23 @@ function add_keydown_event(element) {
 function clipboard(text) {
     navigator.clipboard.writeText(text);
     console.log("clipboard(): copy to clipboard: " + text);
+    notification("Copied: " + text);
 }
 
 // ADD CLIPBOARD FUNCTIONALITY
+last_clicked_element = null;
 function add_clipboard_event(element) {
     element.addEventListener("click", (event) => {
         let new_clipboard_text = "";
         console.log("click event: element.tagName: " + element.tagName);
-        if (element.getAttribute("class") == "kanjidic2_mr_container") {
-            console.log("click event: is kanjidic2_mr_container");
-            new_clipboard_text = element.children[0].textContent;
-        } else { console.log("click event: is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
+        if (last_clicked_element == element) {
+            if (element.getAttribute("class") == "kanjidic2_mr_container") {
+                console.log("click event: is kanjidic2_mr_container");
+                new_clipboard_text = element.children[0].textContent;
+            } else { console.log("click event: is NOT kanjidic2_mr_container"); new_clipboard_text = element.textContent; }
 
-        navigator.clipboard.writeText(new_clipboard_text);
-        console.log("click event: clipboard: " + new_clipboard_text);
-        notification("Copied to clipboard: " + new_clipboard_text);
+            clipboard(new_clipboard_text);
+        } else { notification("Click again to copy to clipboard"); last_clicked_element = element; }
     });
 }
 
@@ -1101,8 +1113,6 @@ function notification(text, x,y) {
     notify_ele = document.getElementById("notification");
     notify_container = document.getElementById("notification_container");
     notify_ele.textContent = text;
-    //notify_ele.style.setProperty("left", x + "px");
-    //notify_ele.style.setProperty("top", y + "px");
     notify_container.style.setProperty("display", "flex");
     notify_container.style.setProperty("opacity", "1");
 
