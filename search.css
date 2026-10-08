@@ -434,6 +434,7 @@ input.keywordbox_x {
 input.keywordbox_x:hover {
     opacity: 1;
     filter:drop-shadow(0px 0px 2px var(--accent));
+    background-color: #00000000; /* because of input:hover earlier above */
 }
 
 .grey { color:var(--fg2); border-color:var(--fg2); }
