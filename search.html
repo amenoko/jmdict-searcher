@@ -7,6 +7,7 @@
         <title>JMdict Searcher</title>
         <link href="search.css" rel="stylesheet" />
         <script src="pako.min.js"></script>
+        <script src="fxparser.min.js"></script>
         <script language="JavaScript" type="text/javascript">
 
 
@@ -48,11 +49,7 @@ function keywordbox_init() {
                 keywordbox_add(event.target.value.trim());
                 event.target.value = event.target.value.slice(0,-1);
             } else { event.target.value == "" ; }
-        } /*else if (event.key == "Backspace") {
-            if(event.target.value == "") {
-                document.getElementsByClassName("keywordbox")[document.getElementsByClassName("keywordbox").length - 1].remove();
-            }*/
-        //}
+        }
 
         // pop rightmost/newest box back in
         setTimeout(() => {
@@ -206,6 +203,9 @@ async function focus(animate) {
         document.getElementById("search_field_parent").setAttribute("class", "activate");
         setTimeout(() => { document.getElementById("search_field_parent").setAttribute("class", "");},500);
     }
+
+    // fix browser shortcuts not working? ctrl+r, f3, f5
+    //setTimeout(() => { document.getElementById("search_field").focus(); }, 500);
     document.getElementById("search_field").focus();
 }
 
@@ -346,9 +346,12 @@ display_counter=true; //for checking whether result lists are affected by async?
 results_counter=0;
 
 function ui_log (text) {
+    // this might've been a dumb idea
+    /*
     if (document.getElementById("results_container") != null) {
         document.getElementById("results_container").innerHTML += text + "<br>";
-    }
+    } */
+    return;
 }
 
 // POST-INIT
@@ -934,11 +937,12 @@ async function searchexec(optional_string, pushstate) {
                     document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
                 }
                 await searchXML(search_array[x], multisearch);
-                await disable_input(false);
+
                 if (display_counter) {await results_counter_update(results_counter);}
             }
         }
-    if (tracker_no_results) { focus(); }
+        await disable_input(false);
+    if (tracker_no_results) { await disable_input(false); focus(); }
     else { document.getElementsByClassName("results_container_column")[0].focus(); }
     await status_update("");
     search_ongoing=false;
@@ -988,22 +992,40 @@ window.addEventListener('popstate', async function(event) {
 ctrl_a = 0; // 0 - nothing pressed, 1 - pressed control, 2 - pressed "a" after pressing control
 function add_keydown_event(element) {
     element.addEventListener("keydown", (e) => {
+
+        console.log("keydown event: " + e.key);
         update_search_label();
         let x = e.key;
-        if(x != "ArrowUp"
-        && x != "ArrowDown"
-        && x != "Home"
-        && x != "End"
-        && x != "PageDown"
-        && x != "PageUp"
-        && x != "Control"
-        ) {
+        // whitelist, to prevent focus() from fucking with browser functions like F3 or CTRL+F5
+        if (x.match(/^[a-z]$/) != null || x == " " || x == "Control") {
             console.log("keydown event: calling focus() (focus search bar)");
             focus();
         }
         else {
-            console.log("keydown event: focusing results_container_column[0]");
-            if (document.getElementsByClassName("results_container_column")[0]) { document.getElementsByClassName("results_container_column")[0].focus(); }
+            if(x == "ArrowUp"
+            || x == "ArrowDown"
+            || x == "Home"
+            || x == "End"
+            || x == "PageDown"
+            || x == "PageUp") {
+                //console.log("keydown event: focusing first results_container_column if there is one");
+                // text box needs immediate focus() for IME (CTRl+Space) to trigger but
+                // here we can add a safety delay
+                // this doesn't seem to work properly lol
+                col = document.getElementsByClassName("results_container_column")[0];
+                if (col != null) {
+                    setTimeout( () => {
+                        // animation
+                        //col.contentWindow.document.body.setAttribute("class","results_container_column_inside inset_shadow");
+                        //setTimeout( () => { col.contentWindow.document.body.setAttribute("class","results_container_column_inside"); }, 500);
+
+                        //console.log("keydown event: focusing results_container_column[0]");
+                        col.focus();
+                    }, 50);
+                    // even without the timeout, pressing arrow up/down or pgup/dn once
+                    // doesn't actually scroll the iframe yet, only after focus has been shifted
+                } //else { console.log("keydown event: no results_container_columns"); }
+            }
         }
 
 
@@ -1108,26 +1130,28 @@ function add_clipboard_event(element) {
 }
 
 // NOTIFICATION TOAST
-notifications_visible = 0; // to track whether there already is a notification so we can keep the window open
+timeout_queue = 0;
 function notification(text, x,y) {
+    console.log("notification(): begin");
     notify_ele = document.getElementById("notification");
     notify_container = document.getElementById("notification_container");
     notify_ele.textContent = text;
+
     notify_container.style.setProperty("display", "flex");
     notify_container.style.setProperty("opacity", "1");
-
-    notifications_visible++;
-    setTimeout(() => {
-        // don't close if the counter was increased beyond 1 by another notif
-        // (so the window stays open for longer)
-        if (notifications_visible <= 1) {
-            // hopefully this works lol
+    timeout_queue++;
+    setTimeout( () => {
+        if(timeout_queue == 1) {
+            timeout_queue=-1;
             notify_container.style.setProperty("opacity", "0");
-            setTimeout( () => { notify_container.style.setProperty("display", "none"); notifications_visible = 0; }, 500);
-        }
-        else { notifications_visible--; }
-    }, 1100);
-    console.log("notification(): " + text);
+            setTimeout( () => {
+                if (timeout_queue == -1) {
+                    notify_container.style.setProperty("display", "none");
+                }
+            }, 500);
+            timeout_queue = 0;
+        } else { timeout_queue--; }
+    }, 1000);
 }
 
 // FIX SEARCH BAR ON MOBILE
@@ -1210,10 +1234,10 @@ function global_css_var(name, value, target_iframe) {
         <div id="notification">Notification here</div>
     </div>
     <div id="search_bar">
-        <input type="submit" value="Paste & Go (Add)" onClick="paste()" id="paste" disabled>
-        <input type="submit" value="Paste & Go (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
+        <input type="submit" value="Paste (Add)" onClick="paste()" id="paste" disabled>
+        <input type="submit" value="Paste (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
         <div id="search_field_parent" class="search_field_parent_disabled">
-            <input type="text" name="literal" id="search_field" disabled>
+            <input type="text" autocomplete="off" name="literal" id="search_field" disabled>
             <input type="submit" value=" " onClick="clear_input()" id="clear" disabled>
         </div>
         <input type="submit" value="Search" onClick="searchexec()" id="search_button" disabled>
