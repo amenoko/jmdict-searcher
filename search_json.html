@@ -271,20 +271,14 @@ function update_search_label() {
     }
 }
 
-// jmdict
-let xmlDoc_jm = null;
-jm_date = "";
-// kanjidic2
-let xmlDoc_kanji = null;
-kanji_date = "";
-
 // used for determining whether to focus after a search
 tracker_no_results = false;
 
 // INIT
 async function init() {
-    ui_log("init(): begin");
+    console.log("init(): begin (" + Date() + ")");
     try {
+        console.log("init(): fetching JMdict chunks (" + Date() + ")");
         const [r1,r2] = await Promise.all([
         fetch("JMdict.json.gz.1"),
         fetch("JMdict.json.gz.2")
@@ -300,88 +294,37 @@ async function init() {
         inflateme = new Uint8Array(27245728);
         inflateme.set(new Uint8Array(await r1.arrayBuffer()), 0);
         inflateme.set(new Uint8Array(await r2.arrayBuffer()), 18000000);
+        console.log("init(): unzipping & parsing (" + Date() + ")");
+        jm = JSON.parse(pako.ungzip(inflateme,{ 'to': 'string' }));
+        console.log("init(): done (" + Date() + ")");
+
+
+    } catch (error) {
+        console.error(error.message);
+        ui_log("init(): error: " + error.message);
+        return 1;
+    }
+
+    try {
+        console.log("init(): fetching kanjidic2 file (" + Date() + ")");
+        const response = await fetch("kanjidic2.json.gz");
+        console.log("init(): response status: " + response.status);
+        if (!response.ok) {
+            throw new Error("Response status: ${response.status}");
+        }
+
+        const result = await response.arrayBuffer();
+        inflateme = new Uint8Array(result);
         console.log("init(): unzipping & parsing");
-        jm = JSON.parse(pako.ungzip(inflateme,{ 'to': 'string' }));
-
-
-    } catch (error) {
-        console.error(error.message);
-        ui_log("init(): error: " + error.message);
-        return 1;
-    }
-
-    try {
-        const response = await fetch("kanjidic2.xml.gz");
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-            ui_log("init(): fetch(\"kanjidic2.xml.gz\") failed: " + response.status);
-        }
-
-        const result = await response.arrayBuffer();
-        inflateme = new Uint8Array(result);
-        ui_log("init(): pako.gunzip() kanjidic2");
-        inflated = pako.ungzip(inflateme,{ 'to': 'string' });
-        ui_log("init(): DomParser() for kanjidic2");
-        xmlDoc_kanji = new window.DOMParser().parseFromString(inflated, "text/xml");
-
-        console.log("init(): loaded kanjidic2");
-        kanji_date = xmlDoc_kanji.getElementsByTagName("date_of_creation")[0].textContent;
+        kd = JSON.parse(pako.ungzip(inflateme,{ 'to': 'string' }));
+        console.log("init(): done (" + Date() + ")");
 
     } catch (error) {
         console.error(error.message);
         ui_log("init(): error: " + error.message);
         return 2;
     }
-    ui_log("init(): end");
-    return new Promise(resolve => setTimeout(resolve, 0));
-}
-
-// INIT (backup)
-async function init_backup() {
-    ui_log("init(): begin");
-    try {
-        const response = await fetch("JMdict.json.gz");
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-            ui_log("init(): fetch(\"JMdict.json.gz\") failed: " + response.status);
-        }
-
-        const result = await response.arrayBuffer();
-        console.log("init(): " + result);
-        console.log("init(): extracting and parsing JMdict file");
-        inflateme = new Uint8Array(result);
-        jm = JSON.parse(pako.ungzip(inflateme,{ 'to': 'string' }));
-
-    } catch (error) {
-        console.error(error.message);
-        ui_log("init(): error: " + error.message);
-        return 1;
-    }
-
-    try {
-        const response = await fetch("kanjidic2.xml.gz");
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-            ui_log("init(): fetch(\"kanjidic2.xml.gz\") failed: " + response.status);
-        }
-
-        const result = await response.arrayBuffer();
-        console.log("init(): " + result);
-        inflateme = new Uint8Array(result);
-        ui_log("init(): pako.gunzip() kanjidic2");
-        inflated = pako.ungzip(inflateme,{ 'to': 'string' });
-        ui_log("init(): DomParser() for kanjidic2");
-        xmlDoc_kanji = new window.DOMParser().parseFromString(inflated, "text/xml");
-
-        console.log("init(): loaded kanjidic2");
-        kanji_date = xmlDoc_kanji.getElementsByTagName("date_of_creation")[0].textContent;
-
-    } catch (error) {
-        console.error(error.message);
-        ui_log("init(): error: " + error.message);
-        return 2;
-    }
-    ui_log("init(): end");
+    ui_log("init(): end (" + Date() + ")");
     return new Promise(resolve => setTimeout(resolve, 0));
 }
 
@@ -433,8 +376,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     new_html_element.setAttribute("class", "grey");
     greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML =
     "<div class=\"grey\">Last update: " + modified + "<br>"
-    + "JMdict version: " + jm_date + "<br>"
-    + "kanjidic2 version: " + kanji_date
+    + "JMdict version: " + "(sorry, nothing)" + "<br>"
+    + "kanjidic2 version: " + "(sorry, nothing)"
     + "<\/div><br>"
     + greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML;
     add_keydown_event(document);
@@ -448,7 +391,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         e.setAttribute("rel","stylesheet");
         document.head.appendChild(e);
     });
-    ui_log("");
     if(url_query_search_word == null) { await disable_input(false); }
 }, false);
 
@@ -501,11 +443,11 @@ async function searchXML(search_word, display_search_term_header) {
     // kanjidic2 query
     found_kanji=false;
     if (search_word.length < 10) {
-        characters=xmlDoc_kanji.getElementsByTagName("character");
-        for (let p=0;p < characters.length;p++) {
+        characters=kd.kanjidic2.character;
+        for (character of characters) {
             found_kanji=false
             // each <character> has only 1 <literal> entry (I checked)
-            kanji_literal = characters[p].getElementsByTagName("literal")[0].textContent;
+            kanji_literal = character.literal;
             if (search_word.includes(kanji_literal)) {
                 console.log("searchXML(): found character: " + kanji_literal);
                 found_kanji=true;
@@ -527,14 +469,11 @@ async function searchXML(search_word, display_search_term_header) {
                 joyo_html_element = results_container_column.createElement("div");
                 joyo_html_element.setAttribute("class", "kanjidic2_joyo");
                 row_container.appendChild(joyo_html_element);
-                grade = characters[p].getElementsByTagName("grade");
-                if (grade[0] != null) {
-                    if (grade[0].textContent == 9) { joyo_html_element.textContent = "Jinmeiyō"; }
+                grade = character.misc.grade;
+                if (grade != null) {
+                    if (grade == 9) { joyo_html_element.textContent = "Jinmeiyō"; }
                     else { joyo_html_element.textContent = "Jōyō"; }
                     // append later, in case it helps with formatting
-                } else {
-                    joyo_html_element.textContent = "Hyōgai";
-                    joyo_html_element.setAttribute("class", "kanjidic2_hyougai");
                 }
 
                 // make one container for meanings and readings to allow them to line break
@@ -543,35 +482,42 @@ async function searchXML(search_word, display_search_term_header) {
                 mr_container.setAttribute("class", "kanjidic2_mr_container");
                 row_container.appendChild(mr_container);
 
-                // meanings
-                kanji_meanings = characters[p].getElementsByTagName("meaning");
-                new_html_element = results_container_column.createElement("div");
-                for (let o=0;o < kanji_meanings.length;o++) {
-                    if (kanji_meanings[o].getAttribute("m_lang") == null || kanji_meanings[o].getAttribute("m_lang").match(/^$/))
-                        { new_html_element.textContent += kanji_meanings[o].textContent +  ", "; }
-                }
-                new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
-                new_html_element.setAttribute("class", "kanjidic2_meanings");
-                add_clipboard_event(new_html_element);
-                mr_container.appendChild(new_html_element);
+                // there are entries that:
+                // don't have reading_meaning at all
+                // don't have reading_meaning.rmgroup.meaning
+                // don't have reading_meaning.rmgroup.reading
+                // there don't seem to be any that have reading_meaning but no meaning nor reading
+                if(character.reading_meaning != null) {
+                    // meanings
+                    if (character.reading_meaning.rmgroup.meaning != null) {
+                        kanji_meanings = Array.isArray(character.reading_meaning.rmgroup.meaning) ? character.reading_meaning.rmgroup.meaning : [character.reading_meaning.rmgroup.meaning];
+                        new_html_element = results_container_column.createElement("div");
+                        // the english meanings are plain strings while the other languages were converted into
+                        // arrays by the xml to json converter
+                        for (meaning of kanji_meanings) {
+                            if (typeof(meaning) == "string")
+                                { new_html_element.textContent += meaning +  ", "; }
+                        }
+                        new_html_element.textContent = new_html_element.textContent.slice(0,-2); // trailing ", "
+                        new_html_element.setAttribute("class", "kanjidic2_meanings");
+                        add_clipboard_event(new_html_element);
+                        mr_container.appendChild(new_html_element);
+                    } else { console.log("searchXML(): " + kanji_literal + " has no meanings?"); }
 
-                // readings
-                kanji_readings = characters[p].getElementsByTagName("reading");
-                new_html_element = results_container_column.createElement("div");
-                for (let o=0;o < kanji_readings.length;o++) {
-                    // skip if foreign language
-                    if (kanji_readings[o].getAttribute("r_type") == null || kanji_readings[o].getAttribute("r_type").match(/^$|ja_on|ja_kun/)) {
-                        new_html_element.textContent +=  kanji_readings[o].textContent + "・";
-
-                        // to check whether we're at the last (viable) item
-                        // (o alone isn't useful since the last items are foreign and skipped)
-                        //if (kanji_readings[o+1] == null) {console.log("doing nothing");}
-                        //else {new_html_element.textContent += ", ";}
+                    // readings
+                    if (character.reading_meaning.rmgroup.reading != null) {
+                    kanji_readings = Array.isArray(character.reading_meaning.rmgroup.reading) ? character.reading_meaning.rmgroup.reading : [character.reading_meaning.rmgroup.reading];
+                    new_html_element = results_container_column.createElement("div");
+                    for (reading of kanji_readings) {
+                        if (reading['@attributes']['r_type'] == "ja_on" || reading['@attributes']['r_type'] == "ja_kun") {
+                            new_html_element.textContent +=  reading['#text'] + "・";
+                        }
                     }
+                    new_html_element.textContent = new_html_element.textContent.slice(0,-1); // trailing "・"
+                    new_html_element.setAttribute("class", "kanjidic2_readings");
+                    mr_container.appendChild(new_html_element);
+                    } else { console.log("searchXML(): " + kanji_literal + " has no readings?"); }
                 }
-                new_html_element.textContent = new_html_element.textContent.slice(0,-1); // trailing "・"
-                new_html_element.setAttribute("class", "kanjidic2_readings");
-                mr_container.appendChild(new_html_element);
 
                 if (grade != null) { mr_container.appendChild(joyo_html_element); }
 
@@ -851,7 +797,7 @@ async function searchXML(search_word, display_search_term_header) {
                     sense_glosses_element = results_container_column.createElement("div");
                     sense_glosses_element.setAttribute("class", "senses_glosses");
                     sense_glosses_element.textContent = sense_glosses.slice(0,-2);
-                    add_clipboard_event(sense_glosses_element);
+                    add_clipboard_event(sense_glosses_element)
                     sense_block_container.appendChild(sense_glosses_element);
 
                     // type of word (ichidan verb, etc)
@@ -872,7 +818,7 @@ async function searchXML(search_word, display_search_term_header) {
                     // "this sense is restricted to only [reb]"
                     if(sense.stagr != null) {
                         stagrs = Array.isArray(sense.stagr) ? sense.stagr : [sense.stagr];
-                        for(stagr of stagrs) { sense_extras += "only " + stagk + ", "; }
+                        for(stagr of stagrs) { sense_extras += "only " + stagr + ", "; }
                     }
                     // "see also [keb/reb]"
                     if(sense.xref != null) {
@@ -1291,7 +1237,10 @@ function add_clipboard_event(element) {
                 new_clipboard_text = element.textContent;
                 console.log("click event: trying to do some selection fuckery");
                 frames = document.getElementsByTagName("iframe");
-                for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
+                for (b=0;b<frames.length;b++) {
+                    selection = frames[b].contentWindow.getSelection();
+                    if ( selection != null) { selection.removeAllRanges(); }
+                }
             }
 
             clipboard(new_clipboard_text);
