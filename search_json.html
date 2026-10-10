@@ -590,11 +590,13 @@ async function searchXML(search_word, display_search_term_header) {
                         console.log("searchXML(): exact keb match: " + k_ele.keb);
                         exact_keb_match=true;
                     }
-                } else if (strip_hiragana(k_ele.keb) != "" && strip_hiragana(k_ele.keb) == strip_hiragana(search_word)) {
-                    // hiragana-less match
-                    console.log("searchXML(): kanaless match: " + k_ele.keb);
-                    hiraganaless_match=true;
-                    found=true;
+                }
+                if (strip_hiragana(k_ele.keb) != "" && strip_hiragana(k_ele.keb) == strip_hiragana(search_word)) {
+                        // hiragana-less match
+                        console.log("searchXML(): kanaless match: " + k_ele.keb);
+                        hiraganaless_match=true;
+                        found=true;
+                    }
                 }
             }
         }
