@@ -938,8 +938,8 @@ async function searchXML(search_word, display_search_term_header) {
                     new_html_element = results_container_column.createElement("div");
                     new_html_element.setAttribute("class", "senses_german");
                     new_html_element.textContent = senses_german[i];
+                    add_clipboard_event(new_html_element);
                     sense_block_container_de.appendChild(new_html_element);
-                    add_clipboard_event(sense_block_container_de);
 
                     if (i < senses_german.length - 1) {
                         separator = results_container_column.createElement("div");
