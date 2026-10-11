@@ -98,6 +98,11 @@ body, #search_button,
     { margin-right: 6px; }
 .keb, .k_ele_freq:not(#greeting_inner > .k_ele_freq), .k_ele_other, .senses_german_lead:first-child
     { margin-right: 5px; }
+.reb
+    { margin-right: 4px; }
+.reb:last-child {
+    { margin-right: 0px; }
+}
 .kanjidic2_kanji, .kanjidic2_readings, .kanjidic2_meanings
     { margin-right:8px;}
 /* vertical lists margin-bottom */

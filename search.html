@@ -1012,8 +1012,16 @@ async function searchexec(optional_string, pushstate) {
     if (optional_string != null) {
         is_direct_search = true;
         console.log("searchexec(): is direct search");
+
+        // direct search = replace current search
+        while (document.getElementsByClassName("keywordbox")[0]) { document.getElementsByClassName("keywordbox")[0].remove(); }
     } else { console.log("searchexec(): is not direct search"); }
 
+    // not sure how else to do this
+    // check if there's white space and somehow add it to this next if statement
+    // I doubt this works and I don't feel like testing:
+    // (document.getElementsByClassName("keywordbox").length == 0 && optional_string == null || optional_string,match(/^\s*$/) != null)
+    if (optional_string != null && optional_string.match(/^\s*$/) != null) { optional_string = null; }
     if (document.getElementsByClassName("keywordbox").length == 0 && optional_string == null) {
         console.log("searchexec(): no search terms, quitting");
         document.getElementById("results_count").textContent = "";
@@ -1030,6 +1038,7 @@ async function searchexec(optional_string, pushstate) {
         document.getElementsByTagName("title")[0].textContent = "JMdict Searcher";
         update_search_label();
         search_ongoing=false;
+        disable_input(false);
         return;
     }
 
@@ -1084,8 +1093,12 @@ async function searchexec(optional_string, pushstate) {
             }
         }
         await disable_input(false);
-    if (tracker_no_results) { await disable_input(false); focus(); }
-    else { document.getElementsByClassName("results_container_column")[0].focus(); }
+    if (tracker_no_results) {
+        await disable_input(false);
+        focus();
+    } else {
+        document.getElementsByClassName("results_container_column")[0].focus();
+    }
     await status_update("");
     search_ongoing=false;
     console.log("searchexec(): end");
@@ -1129,8 +1142,8 @@ window.addEventListener('popstate', async function(event) {
 
 // SITE-WIDE KEY INPUT HANDLER
 // originally just for focusing search bar, now additionally
-// having to emulate CTRL+A textbox behavior after adding keywordboxes
-// (great idea)
+// having to emulate CTRL+A textbox behavior after having
+// added keywordbox feature (great idea)
 ctrl_a = 0; // 0 - nothing pressed, 1 - pressed control, 2 - pressed "a" after pressing control
 function add_keydown_event(element) {
     element.addEventListener("keydown", (e) => {
@@ -1168,6 +1181,12 @@ function add_keydown_event(element) {
                     // doesn't actually scroll the iframe yet, only after focus has been shifted
                 } //else { console.log("keydown event: no results_container_columns"); }
             }
+        }
+
+        if (x == "Escape") {
+            // "return to frontpage" (= empty search)
+            searchexec(" ");
+            return;
         }
 
 
