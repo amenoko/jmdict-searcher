@@ -2,4 +2,4 @@ completely unofficial Japanese-English(-German) dictionary tool utilizing JMdict
 
 try here: https://amenoko.github.io/jmdict-searcher/search.html
 
-pure javascript, no server-side logic. parsing 100mb+ of XML is very inefficient so the page takes a couple seconds to load
+pure javascript, no server-side logic. ~parsing 100mb+ of XML is very inefficient so the page takes a couple seconds to load~ rewrote it to use json, it's less bad now
