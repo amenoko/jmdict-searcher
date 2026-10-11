@@ -234,6 +234,7 @@ flex-grow:1;
 .keb, .reb_white {
     color:var(--fg1);
 }
+.reb_white { display:inline; }
 .reb {
     color:var(--fg2);
     display: inline;
