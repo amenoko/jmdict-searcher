@@ -1155,7 +1155,13 @@ function add_keydown_event(element) {
         update_search_label();
         let x = e.key;
         // whitelist, to prevent focus() from fucking with browser functions like F3 or CTRL+F5
-        if (x.match(/^[a-z]$/) != null || x == " " || x == "Control") {
+        if (x.match(/^[a-z]$/) != null
+            || x == " "
+            || x == "Control"
+            || x == "Backspace"
+            || x == "ArrowLeft"
+            || x == "ArrowRight"
+            || x == "Shift") {
             console.log("keydown event: calling focus() (focus search bar)");
             focus();
         }
