@@ -1213,7 +1213,7 @@ function add_keydown_event(element) {
                 if ( ctrl_a == 1 ) {
                     console.log("keydown event: pressed \"a\"");
                     console.log("keydown event: if next key is backspace, del or new input into search field, all previous keywordboxes will be deleted");
-                    notification("Selected all search terms (CTRL+A event)");
+                    notification("CTRL+A");
                     ctrl_a = 2; // if next key is backspace, delete all keywordboxes
                 } else if (ctrl_a == 2) {
                     // have to hard code for "a" because the "else" portion below isn't
@@ -1223,7 +1223,7 @@ function add_keydown_event(element) {
                     setTimeout( () => {
                     if (document.getElementById("search_field").value.length > 0) {
                         console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
-                        notification("Replacing all search terms (CTRL+A event)")
+                        notification("Replace all search terms (CTRL+A)")
                         while(boxes[0]) {boxes[0].remove();}
                         console.log("keydown event: trying to do some selection fuckery");
                         frames = document.getElementsByTagName("iframe");
@@ -1235,7 +1235,7 @@ function add_keydown_event(element) {
             else if (e.key == "Backspace" || e.key == "Delete") {
                 if (ctrl_a == 2 || ctrl_a == 3) {
                     console.log("keydown event: detected CTRL+A -> DEL or BACKSPACE, deleting all search terms");
-                    notification("Deleted all search terms (CTRL+A event)");
+                    notification("Delete all search terms (CTRL+A)");
                     boxes = document.getElementsByClassName("keywordbox");
                     while(boxes[0]) { boxes[0].remove(); }
                     console.log("keydown event: trying to do some selection fuckery");
@@ -1250,7 +1250,7 @@ function add_keydown_event(element) {
                 setTimeout( () => {
                 if (document.getElementById("search_field").value.length > 0 && ctrl_a == 2) {
                     console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
-                    notification("Replaced search terms (CTRL+A event)");
+                    notification("Replace search terms (CTRL+A)");
                     while(boxes[0]) {boxes[0].remove();}
                     console.log("keydown event: trying to do some selection fuckery");
                     frames = document.getElementsByTagName("iframe");
@@ -1260,12 +1260,12 @@ function add_keydown_event(element) {
                 // detect CTRL+V, start search if detected
                 if (e.key.toLowerCase() == "v" && ctrl_a == 1 && document.getElementById("search_field").value.length > 0) {
                         console.log("keydown event: pressed CTRL+V, starting search");
-                        notification("Starting search (CTRL+V event)");
+                        notification("CTRL-V: Start search");
                         setTimeout( () => { searchexec(); }, 100);
                     }
                     else if (e.key.toLowerCase() == "v" && ctrl_a == 2 && document.getElementById("search_field").value.length > 0) {
                         console.log("keydown event: pressed CTRL+V after CTRL+A, replacing search terms and starting search");
-                        notification("Replaced search terms and starting search (CTRL+A -> CTRL+V event)");
+                        notification("Replace search terms and start search (CTRL+A → CTRL+V)");
                         while(boxes[0]) { boxes[0].remove(); }
                         setTimeout( () => { searchexec(); }, 100);
                 }
