@@ -782,7 +782,6 @@ async function searchXML(search_word, display_search_term_header) {
                 }
                 meanings_readings.appendChild(k_ele_container);
             }
-            await results_counter_update();
             if (!has_kebs) {
                 for (child of meanings_readings.children) {
                     if(child.getAttribute("class") == "reb") {
