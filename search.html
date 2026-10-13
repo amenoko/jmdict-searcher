@@ -11,14 +11,18 @@
         <script language="JavaScript" type="text/javascript">
 
 
-function keywordbox_add (search_word, disabled) {
+function keywordbox_add(search_word, disabled) {
+    console.log("keywordbox_add(): begin");
+    console.log("keywordbox_add(): search_word = " + search_word);
+    console.log("keywordbox_add(): disabled = " + disabled);
     // if user pastes string with spaces, trim and split it here
     keyword_array = search_word.trim().split(/\s+/);
+    console.log("keywordbox_add(): keyword_array.length = " + keyword_array.length);
     if (keyword_array != "") {
         for (q=0;q<keyword_array.length;q++) {
             box = document.createElement("div");
             box.textContent = keyword_array[q];
-            if (disabled == null) { disabled == false; }
+            if (disabled == null) { disabled = false; }
             if (!disabled) { box.setAttribute("class", "keywordbox"); }
             else { box.setAttribute("class", "keywordbox grey"); }
 
@@ -29,10 +33,13 @@ function keywordbox_add (search_word, disabled) {
             x.setAttribute("class","keywordbox_x");
             x.addEventListener("click", (xevent) => {
                 xevent.target.parentElement.remove();
+                update_search_label();
             });
+            console.log("keywordbox_add(): appending box with text \"" + box.textContent + "\"");
             box.appendChild(x);
         }
         setTimeout(() => {
+            console.log("keywordbox_add(): clearing search_field");
             document.getElementById("search_field").value = "";
             update_search_label();
         }, 100);
@@ -215,24 +222,24 @@ async function unfocus() {
 }
 
 async function disable_input(value) {
-    console.log("disable_input(): begin");
+    //console.log("disable_input(): begin");
     if(value == null) {
-        console.log("disable_input(): no param, setting value to true");
+        //console.log("disable_input(): no param, setting value to true");
         value = true;
     }
-    console.log("disable_input(): value = " + value);
+    //console.log("disable_input(): value = " + value);
     keywordbox_array = document.getElementsByClassName("keywordbox");
     keywordbox_x_array = document.getElementsByClassName("keywordbox_x");
-    console.log("disable_input(): keywordbox_array.length = " + keywordbox_array.length);
-    console.log("disable_input(): keywordbox_x_array.length = " + keywordbox_x_array.length);
+    //console.log("disable_input(): keywordbox_array.length = " + keywordbox_array.length);
+    //console.log("disable_input(): keywordbox_x_array.length = " + keywordbox_x_array.length);
     if (value) {
-        console.log("disable_input(): value is true, disabling stuff");
+        //console.log("disable_input(): value is true, disabling stuff");
         document.getElementById("search_field_parent").setAttribute("class", "search_field_parent_disabled");
         for (let m=0;m<keywordbox_array.length;m++) {
             keywordbox_array[m].setAttribute("class", "keywordbox grey");
         }
     } else {
-        console.log("disable_input(): value is false, un-disabling stuff");
+        //console.log("disable_input(): value is false, un-disabling stuff");
         document.getElementById("search_field_parent").setAttribute("class", "");
         for (let m=0;m<keywordbox_array.length;m++) {
             keywordbox_array[m].setAttribute("class", "keywordbox");
@@ -277,7 +284,10 @@ tracker_no_results = false;
 // INIT
 async function init() {
     console.log("init(): begin (" + Date() + ")");
+
+
     try {
+        await notification("Loading JMdict...", 4000); // ""infinite"" (until cleared manually)
         console.log("init(): fetching JMdict chunks (" + Date() + ")");
         const [r1,r2] = await Promise.all([
         fetch("JMdict.json.gz.1"),
@@ -300,12 +310,15 @@ async function init() {
 
 
     } catch (error) {
+        await notification("Error loading JMdict", 4000);
         console.error(error.message);
         ui_log("init(): error: " + error.message);
         return 1;
     }
 
+
     try {
+        await notification("Loading kanjidic2", 4000);
         console.log("init(): fetching kanjidic2 file (" + Date() + ")");
         const response = await fetch("kanjidic2.json.gz");
         console.log("init(): response status: " + response.status);
@@ -320,11 +333,13 @@ async function init() {
         console.log("init(): done (" + Date() + ")");
 
     } catch (error) {
+        await notification("Error loading kanjidic", 4000);
         console.error(error.message);
         ui_log("init(): error: " + error.message);
         return 2;
     }
     ui_log("init(): end (" + Date() + ")");
+    await notification(null, 3); // null = don't change text; for dismissing notifications
     return new Promise(resolve => setTimeout(resolve, 0));
 }
 
@@ -349,13 +364,12 @@ function ui_log (text) {
 // POST-INIT
 document.addEventListener('DOMContentLoaded', async function () {
     // if reload, disable input
-    window.onbeforeunload = disable_input();
+    //window.onbeforeunload = disable_input();
     console.log("DOMContentLoaded event: ");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
-    ui_log("Calling init()...<br>");
+    await disable_input(false);
     init_status = await init();
-    ui_log("Calling keywordbox_init()... <br>");
     await keywordbox_init();
     if(init_status == 1) {
         status_update("Failed to load JMdict");
@@ -376,8 +390,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     new_html_element.setAttribute("class", "grey");
     greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML =
     "<div class=\"grey\">Last update: " + modified + "<br>"
-    + "JMdict version: " + "(sorry, nothing)" + "<br>"
-    + "kanjidic2 version: " + "(sorry, nothing)"
     + "<\/div><br>"
     + greeting_iframe.contentWindow.document.getElementById("greeting_inner").innerHTML;
     add_keydown_event(document);
@@ -1133,12 +1145,15 @@ window.addEventListener('popstate', async function(event) {
     console.log("popstate event");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
+    console.log("popstate event listener: url_query_search_word = " + url_query_search_word);
+    console.log("popstate event listener: url_query_params = " + url_query_params);
     clear_input();
     search_words_array = url_query_search_word != null ? url_query_search_word.split(/\s+/) : [];
     for (u=0;u<search_words_array.length;u++) {
+        console.log("popstate event listener: keywordbox_add(\"" + search_words_array[u] + "\")");
         keywordbox_add(search_words_array[u]);
     }
-    searchexec(url_query_search_word, false); // do not push state
+    searchexec(null, false); // do not push state
 });
 
 
@@ -1312,11 +1327,18 @@ function add_clipboard_event(element) {
 // NOTIFICATION TOAST
 timeout_queue = 0;
 n_ticker = 0; // notification ticker (basically a timer, see setInterval below)
-function notification(text) {
-    document.getElementById("notification").textContent = text;
+function notification(text, duration) {
+    // set duration to 0 to clear all notifications
+    // if calling notification as notification(null, 4),
+    // don't change text but still apply the new timeout
+    if (text != null) {
+    document.getElementById("notification").textContent = text; }
     notify_container = document.getElementById("notification_container");
 
-    n_ticker = 6; // if ticker is 250ms then 250*8 = 2 sec
+    // if ticker is 250ms then 1s would be n_ticker = 4
+    if (duration != null) { n_ticker = duration; }
+    else { n_ticker = 6; }
+
     notify_container.style.setProperty("transition", "none");
     notify_container.style.setProperty("opacity", "1");
     notify_container.style.setProperty("display", "flex");
@@ -1339,7 +1361,7 @@ setInterval( () => {
     }
 
     if(n_ticker > 0) { n_ticker--; }
-},200);
+},250);
 
 // FIX SEARCH BAR ON MOBILE
 window.visualViewport.addEventListener("resize", (event) => {
