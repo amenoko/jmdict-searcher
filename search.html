@@ -51,7 +51,7 @@ last_cur_pos=0;
 async function keywordbox_init() {
     document.getElementById("search_field").addEventListener("keydown", (event) => {
         console.log("search_field keydown event: " + event.key);
-        if (event.key == "Space" || event.key == " " || event.key == "ArrowRight") {
+        if (event.key == "ArrowRight") {
             if (event.target.value.match(/^\s*$/) == null && event.target.selectionStart == event.target.value.length) {
                 keywordbox_add(event.target.value.trim());
                 event.target.value = event.target.value.slice(0,-1);
@@ -60,7 +60,9 @@ async function keywordbox_init() {
 
         // pop rightmost/newest box back in
         setTimeout(() => {
+            console.log("last_cur_pos: " + last_cur_pos);
             boxes = document.getElementsByClassName("keywordbox");
+            console.log("boxes.length = " + boxes.length);
             if (boxes.length > 0 && event.target.selectionStart == 0 && last_cur_pos == 0) {
                 last_text = boxes[boxes.length-1].textContent;
                 if (event.key == "ArrowLeft") {
@@ -70,9 +72,9 @@ async function keywordbox_init() {
                         event.target.value = last_text + " " + event.target.value;
                     }
                     boxes[boxes.length-1].remove();
-                    event.target.selectionStart = last_text.length - 1;
-                    event.target.selectionEnd = last_text.length - 1;
-
+                    event.target.selectionStart = last_text.length;
+                    event.target.selectionEnd = last_text.length;
+                    event.target.value = event.target.value.trim();
                 } else if (event.key == "Backspace") {
                     if (event.target.value == "" ){
                         event.target.value = last_text.slice(0,-1);
@@ -81,14 +83,25 @@ async function keywordbox_init() {
                     }
                     event.target.selectionStart = event.target.value.length;
                     event.target.selectionEnd = event.target.value.length;
+                    console.log("removing last box");
                     boxes[boxes.length-1].remove();
+                    event.target.value = event.target.value.trim();
                 }
             }
-            event.target.value = event.target.value.trim();
             last_cur_pos = event.target.selectionStart;
             update_search_label();
         },100);
         //setTimeout( () => { update_search_label(); }, 100);
+    });
+
+    // we have to add a new listener because of IME spaces since they don't trigger keydown
+    document.getElementById("search_field").addEventListener("input", (event) => {
+        if (event.target.value.match(/^\s*$/) == null
+         && event.target.selectionStart == event.target.value.length
+         && event.target.value.match(/\s+$/)) {
+                keywordbox_add(event.target.value.trim());
+                event.target.value = event.target.value.slice(0,-1);
+        } else { event.target.value == "" ; }
     });
 
     url_query_params = new URLSearchParams(window.location.search);
@@ -108,9 +121,7 @@ async function keywordbox_init() {
     searchexec();
 }
 
-
-
-        // conversion table
+// conversion table
 hiratable = ["しょ","しぇ","しゅ","しゃ","ちょ","ちぇ","ちゅ","ちゃ","じょ","じぇ","じゅ","じゃ","りょ","りゅ","りゃ","みょ","みゅ","みゃ","ひょ","ひゅ","ひゃ","にょ","にゅ","にゃ","ぎょ","ぎゅ","ぎゃ","きょ","きゅ","きゃ","ぞ","ぜ","ず","じ","じ","ざ","ど","で","づ","ぢ","だ","ご","げ","ぐ","ぎ","が","を","わ","ろ","れ","る","り","ら","よ","ゆ","や","も","め","む","み","ま","ほ","へ","ふ","ふ","ひ","は","の","ね","ぬ","に","な","と","て","つ","つ","ち","ち","た","そ","せ","す","し","し","さ","こ","け","く","き","か","お","え","う","い","あ","ん","ん"];
 romatable = ["sho","she","shu","sha","cho","che","chu","cha","jo","je","ju","ja","ryo","ryu","rya","myo","myu","mya","hyo","hyu","hya","nyo","nyu","nya","gyo","gyu","gya","kyo","kyu","kya","zo","ze","zu","zi","ji","za","do","de","dzu","dji","da","go","ge","gu","gi","ga","wo","wa","ro","re","ru","ri","ra","yo","yu","ya","mo","me","mu","mi","ma","ho","he","hu","fu","hi","ha","no","ne","nu","ni","na","to","te","tu","tsu","ti","chi","ta","so","se","su","si","shi","sa","ko","ke","ku","ki","ka","o","e","u","i","a","nn","n"];
 function roma_to_hira(input) {
@@ -1275,7 +1286,7 @@ function add_keydown_event(element) {
                 // detect CTRL+V, start search if detected
                 if (e.key.toLowerCase() == "v" && ctrl_a == 1 && document.getElementById("search_field").value.length > 0) {
                         console.log("keydown event: pressed CTRL+V, starting search");
-                        notification("CTRL-V: Start search");
+                        notification("CTRL+V: Start search");
                         setTimeout( () => { searchexec(); }, 100);
                     }
                     else if (e.key.toLowerCase() == "v" && ctrl_a == 2 && document.getElementById("search_field").value.length > 0) {
