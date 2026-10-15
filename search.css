@@ -36,7 +36,7 @@ body, #search_button, #paste, #clear_paste
 .kanjidic2_kanji, .kanjidic2_readings, .keb, .reb,
 .reb_white, input#search_field, .search_term_header、
 #notification, .search_term_header
-{ font-family: BR Wakaisho, brw; }
+{ font-family: BR Wakaisho, brw, sans-serif; }
 
 /* FONT SIZES */
 body, #search_button,
@@ -63,7 +63,7 @@ body, #search_button,
 { font-size: 12px; }
 .k_ele_freq, .k_ele_other,
 .kanjidic2_joyo, .kanjidic2_hyougai, .kanjidic2_jinmeiyou,
-.re_inf, .re_restr
+.re_inf, .re_restr, #perf
 { font-size: 10px; }
 
 @media (max-width: 800px) {
@@ -94,7 +94,7 @@ body, #search_button,
 #search_button, #light_mode_button, #two_column_button
     { padding: 6px;}
 /* for horizontal lists, margin-right */
-#search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count
+#search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count, #perf
     { margin-right: 6px; }
 .keb, .k_ele_freq:not(#greeting_inner > .k_ele_freq), .k_ele_other, .senses_german_lead:first-child
     { margin-right: 5px; }
@@ -270,13 +270,6 @@ flex-grow:1;
 }
 
 /* SEARCH BAR */
-/* artificial autohide
-.search_bar_visible {
-    opacity: 1;
-}
-.search_bar_hidden {
-    transform: translateY(-100);
-} */
 
 input, #search_field_parent  {
     background-color: var(--bg1);
@@ -446,6 +439,12 @@ input.keywordbox_x:hover {
     opacity: 1;
     filter:drop-shadow(0px 0px 2px var(--accent));
     background-color: #00000000; /* because of input:hover earlier above */
+}
+
+#perf {
+    color: var(--fg3);
+    align-content:center;
+    white-space: nowrap;
 }
 
 .grey { color:var(--fg2); border-color:var(--fg2); }
