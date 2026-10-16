@@ -15,36 +15,10 @@ function keywordbox_add(search_word, disabled) {
     console.log("keywordbox_add(): begin");
     console.log("keywordbox_add(): search_word = " + search_word);
     console.log("keywordbox_add(): disabled = " + disabled);
-    // if user pastes string with spaces, trim and split it here
-    /*keyword_array = search_word.trim().split(/\s+/);
-    console.log("keywordbox_add(): keyword_array.length = " + keyword_array.length);
-    if (keyword_array != "") {
-        for (q=0;q<keyword_array.length;q++) {
-            box = document.createElement("div");
-            box.textContent = keyword_array[q];
-            if (disabled == null) { disabled = false; }
-            if (!disabled) { box.setAttribute("class", "keywordbox"); }
-            else { box.setAttribute("class", "keywordbox grey"); }
-
-            document.getElementById("search_field").before(box);
-            x = document.createElement("input");
-            x.value=" ";
-            x.setAttribute("type", "submit");
-            x.setAttribute("class","keywordbox_x");
-            x.addEventListener("click", (xevent) => {
-                xevent.target.parentElement.remove();
-                update_search_label();
-            });
-            console.log("keywordbox_add(): appending box with text \"" + box.textContent + "\"");
-            box.appendChild(x);
-        }
-        setTimeout(() => {
-            console.log("keywordbox_add(): clearing search_field");
-            document.getElementById("search_field").value = "";
-            last_cur_pos=0;
-            update_search_label();
-        }, 0);
-    }*/
+    if (search_word == null || search_word == "" || search_word.match(/^\s+$/)) {
+        console.log("keywordbox_add(): search_word is null or empty, return");
+        return;
+    }
     box = document.createElement("div");
     box.textContent = search_word;
     if (disabled == null) { disabled = false; }
@@ -243,7 +217,7 @@ async function status_update(text) {
 
 async function focus(animate) {
     if (animate == null) { animate = true; }
-    //console.log("focus()");
+    console.log("focus()");
 
     if (document.getElementById("search_field").disabled == true) { animate = false; }
 
