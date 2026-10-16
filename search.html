@@ -16,7 +16,7 @@ function keywordbox_add(search_word, disabled) {
     console.log("keywordbox_add(): search_word = " + search_word);
     console.log("keywordbox_add(): disabled = " + disabled);
     // if user pastes string with spaces, trim and split it here
-    keyword_array = search_word.trim().split(/\s+/);
+    /*keyword_array = search_word.trim().split(/\s+/);
     console.log("keywordbox_add(): keyword_array.length = " + keyword_array.length);
     if (keyword_array != "") {
         for (q=0;q<keyword_array.length;q++) {
@@ -41,9 +41,31 @@ function keywordbox_add(search_word, disabled) {
         setTimeout(() => {
             console.log("keywordbox_add(): clearing search_field");
             document.getElementById("search_field").value = "";
+            last_cur_pos=0;
             update_search_label();
-        }, 100);
-    }
+        }, 0);
+    }*/
+    box = document.createElement("div");
+    box.textContent = search_word;
+    if (disabled == null) { disabled = false; }
+    if (!disabled) { box.setAttribute("class", "keywordbox"); }
+    else { box.setAttribute("class", "keywordbox grey"); }
+
+    document.getElementById("search_field").before(box);
+    x = document.createElement("input");
+    x.value=" ";
+    x.setAttribute("type", "submit");
+    x.setAttribute("class","keywordbox_x");
+    x.addEventListener("click", (xevent) => {
+        xevent.target.parentElement.remove();
+        update_search_label();
+    });
+    console.log("keywordbox_add(): appending box with text \"" + box.textContent + "\"");
+    box.appendChild(x);
+    console.log("keywordbox_add(): clearing search_field");
+    document.getElementById("search_field").value = "";
+    last_cur_pos=0;
+    update_search_label();
 }
 
 // last cursor position
@@ -60,12 +82,10 @@ async function keywordbox_init() {
 
         // pop rightmost/newest box back in
         setTimeout(() => {
-            console.log("last_cur_pos: " + last_cur_pos);
             boxes = document.getElementsByClassName("keywordbox");
-            console.log("boxes.length = " + boxes.length);
             if (boxes.length > 0 && event.target.selectionStart == 0 && last_cur_pos == 0) {
                 last_text = boxes[boxes.length-1].textContent;
-                if (event.key == "ArrowLeft") {
+                if (event.key == "ArrowLeft" || event.key == "Backspace") {
                     if (event.target.value == "" ) {
                         event.target.value = last_text;
                     } else {
@@ -75,47 +95,57 @@ async function keywordbox_init() {
                     event.target.selectionStart = last_text.length;
                     event.target.selectionEnd = last_text.length;
                     event.target.value = event.target.value.trim();
-                } else if (event.key == "Backspace") {
-                    if (event.target.value == "" ){
-                        event.target.value = last_text.slice(0,-1);
-                    } else {
-                        event.target.value = last_text.slice(0,-1) + " " + event.target.value;
-                    }
-                    event.target.selectionStart = event.target.value.length;
-                    event.target.selectionEnd = event.target.value.length;
-                    console.log("removing last box");
-                    boxes[boxes.length-1].remove();
-                    event.target.value = event.target.value.trim();
                 }
             }
             last_cur_pos = event.target.selectionStart;
             update_search_label();
-        },100);
-        //setTimeout( () => { update_search_label(); }, 100);
+        },0);
     });
 
     // we have to add a new listener because of IME spaces since they don't trigger keydown
     document.getElementById("search_field").addEventListener("input", (event) => {
+        // don't do anything unless search_field isn't empty/blank and cursor is at the end
+        if (pressed_ctrl_a && event.target.value.match(/^\s*$/) == null) {
+            console.log("keydown event: new input in search_field after CTRL+A, deleting all previous keywordboxes");
+            notification("Replace search terms (CTRL+A)");
+            while(boxes[0]) {boxes[0].remove();}
+            console.log("keydown event: trying to do some selection fuckery");
+            frames = document.getElementsByTagName("iframe");
+            for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
+        }
+
         if (event.target.value.match(/^\s*$/) == null
-         && event.target.selectionStart == event.target.value.length
-         && event.target.value.match(/\s+$/)) {
-                keywordbox_add(event.target.value.trim());
-                event.target.value = event.target.value.slice(0,-1);
-        } else { event.target.value == "" ; }
+         && event.target.selectionStart == event.target.value.length) {
+                // always submit if two or more whitespaces at the end
+                // (equivalent to arrowright)
+                if (event.target.value.match(/\s\s$/)) {
+                    keywordbox_add(event.target.value.trim());
+                    event.target.value = event.target.value.slice(0,-1);
+                }
+                // submit if detected only japanese and one space at the end
+                // = single space always submits immediately
+                else if (event.target.value.match(/\s$/)
+                      && event.target.value.replace(/\s/g,"").match(/^(\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|ー)+$/gu))
+                {
+                    // copypasted from above
+                    keywordbox_add(event.target.value.trim());
+                    event.target.value = event.target.value.slice(0,-1);
+                }
+        }
     });
 
-    url_query_params = new URLSearchParams(window.location.search);
-    url_query_search_word = url_query_params.get('q');
-    console.log("keywordbox_init(): url_query_search_word = " + url_query_search_word);
-    console.log("keywordbox_init(): url_query_params = " + url_query_params);
-    if (url_query_search_word != null && url_query_search_word.match(/^\s*$/) == null) {
-        search_words_array = url_query_search_word.split(/\s+/);
-        console.log("keywordbox_init(): search_words_array.length = " + search_words_array.length);
-        for (b=0;b<search_words_array.length;b++) {
-            console.log("keywordbox_init(): keywordbox_add(\"" + search_words_array[b] + "\")");
-            keywordbox_add(search_words_array[b], true);
-        }
-        await notification("URL keywords: " + url_query_search_word);
+    q_words = new URLSearchParams(window.location.search).getAll("q");
+    //console.log("keywordbox_init(): search_words_array.length = " + search_words_array.length);
+    q_words_string = "";
+    for (q of q_words) {
+        //console.log("keywordbox_init(): keywordbox_add(\"" + search_words_array[b] + "\")");
+        keywordbox_add(q, true);
+        q_words_string += q + ", ";
+    }
+    init_t1 = performance.now()
+    perf((init_t1 - init_t0).toString().split(".")[0] + " ms");
+    if (q_words_string.slice(0,-2).length > 0) {
+        await notification("URL keywords: " + q_words_string.slice(0,-2));
     }
     // we run searchexec() no matter if keywords or not, because it'll display greeting screen
     searchexec();
@@ -130,7 +160,7 @@ function roma_to_hira(input) {
     while (input_string.length > 0) {
         piece_matched=false;
         if (input_string == "") {
-                console.log("roma_to_hira(): return " + output);
+                //console.log("roma_to_hira(): return " + output);
                 return output;
         }
 
@@ -145,9 +175,9 @@ function roma_to_hira(input) {
         if (!piece_matched) {
             for (let r=0;r<romatable.length;r++) {
                 if (input_string.slice(0,3) == romatable[r]) {
-                    console.log("roma_to_hira(): " + input_string.slice(0,3) + " matches " + romatable[r]);
+                    //console.log("roma_to_hira(): " + input_string.slice(0,3) + " matches " + romatable[r]);
                     output += hiratable[r];
-                    console.log("roma_to_hira(): output = " + output);
+                    //console.log("roma_to_hira(): output = " + output);
                     input_string = input_string.slice(3);
                     piece_matched = true;
                     r=romatable.length; // break out of this for loop
@@ -157,7 +187,7 @@ function roma_to_hira(input) {
         if (!piece_matched) {
             for (let r=0;r<romatable.length;r++) {
                 if (input_string.slice(0,2) == romatable[r]) {
-                    console.log("roma_to_hira(): " + input_string.slice(0,2) + " matches " + romatable[r]);
+                    //console.log("roma_to_hira(): " + input_string.slice(0,2) + " matches " + romatable[r]);
                     output += hiratable[r];
                     input_string = input_string.slice(2);
                     piece_matched = true;
@@ -169,7 +199,7 @@ function roma_to_hira(input) {
         if (!piece_matched) {
             for (let r=0;r<romatable.length;r++) {
                 if (input_string.slice(0,1) == romatable[r]) {
-                    console.log("roma_to_hira(): " + input_string.slice(0,1) + " matches " + romatable[r]);
+                    //console.log("roma_to_hira(): " + input_string.slice(0,1) + " matches " + romatable[r]);
                     output += hiratable[r];
                     input_string = input_string.slice(1);
                     piece_matched = true;
@@ -213,7 +243,7 @@ async function status_update(text) {
 
 async function focus(animate) {
     if (animate == null) { animate = true; }
-    console.log("focus()");
+    //console.log("focus()");
 
     if (document.getElementById("search_field").disabled == true) { animate = false; }
 
@@ -361,7 +391,9 @@ async function results_counter_update(counter) {
 display_counter=false; //for checking whether result lists are affected by async??
 //we'll still increment results_counter++ so that it can be
 //queried in the dev console
-results_counter=0;
+results_counter=-1;
+// searchexec will NOT set perf element to "" if no search has been performed yet
+// this is so that perf element can be used for display page init time
 
 function ui_log (text) {
     // this might've been a dumb idea
@@ -371,6 +403,9 @@ function ui_log (text) {
     } */
     return;
 }
+
+// measure how long init takes
+init_t0 = performance.now();
 
 // POST-INIT
 document.addEventListener('DOMContentLoaded', async function () {
@@ -419,6 +454,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         document.getElementById("results_count").style.setProperty("display", "none");
         document.getElementById("search_button").style.setProperty("margin-right", "0px");
     }
+    //let user hide perf number
+    document.getElementById("perf").addEventListener("click", (e) => { e.target.style.display = "none"; });
 }, false);
 
 //iframe_counter = 0; // for self-identification
@@ -433,6 +470,7 @@ async function searchXML(search_word, display_search_term_header) {
         console.log("searchXML(): empty, quitting");
         return;
     }
+    search_word = search_word.toLowerCase();
     found=false;
     entries=jm.JMdict.entry;
     new_iframe = document.createElement("iframe");
@@ -440,7 +478,7 @@ async function searchXML(search_word, display_search_term_header) {
     //new_iframe.style.setProperty("display", "none");
 
     // push newer searches to top
-    console.log("searchXML(): results_container.childElementCount = " + results_container.childElementCount);
+    //console.log("searchXML(): results_container.childElementCount = " + results_container.childElementCount);
     if (results_container.childElementCount == 0 ) {
         results_container.appendChild(new_iframe);
     } else {
@@ -476,7 +514,7 @@ async function searchXML(search_word, display_search_term_header) {
             // each <character> has only 1 <literal> entry (I checked)
             kanji_literal = character.literal;
             if (search_word.includes(kanji_literal)) {
-                console.log("searchXML(): found character: " + kanji_literal);
+                //console.log("searchXML(): found character: " + kanji_literal);
                 found_kanji=true;
             }
 
@@ -590,6 +628,8 @@ async function searchXML(search_word, display_search_term_header) {
     results_tally=0; // for exiting when too many results
     discarded=0; // keeping track of how many results had to be discarded after 500
 
+    ger_eng_search = true;
+
 
     // jmdict query
     for (let x=0;x<entries.length;x++) {
@@ -605,37 +645,45 @@ async function searchXML(search_word, display_search_term_header) {
         hiraganaless_match=false;
         entry_match_string = "";
 
-        // <!ELEMENT entry (ent_seq, k_ele*, r_ele+, sense+)>
-        // k_eles are OPTIONAL, check for null value
-        if (entry.k_ele != null) {
-            k_eles = Array.isArray(entry.k_ele) ? entry.k_ele : [entry.k_ele];
-            for (let k_ele of k_eles) {
-                if (k_ele.keb.includes(search_word)) {
-                    found=true;
-                    //console.log("searchXML(): keb match: " + k_ele.keb);
-                    if (k_ele.keb == search_word) {
-                        console.log("searchXML(): exact keb match: " + k_ele.keb);
-                        exact_keb_match=true;
-                    }
-                }
-                if (!exact_keb_match && strip_hiragana(k_ele.keb) != "" && strip_hiragana(k_ele.keb) == strip_hiragana(search_word)) {
-                        // hiragana-less match
-                        console.log("searchXML(): kanaless match: " + k_ele.keb);
-                        hiraganaless_match=true;
+        // check for keb matches
+        if (search_word.match(/\p{Script=Han}/gu)) {
+            // <!ELEMENT entry (ent_seq, k_ele*, r_ele+, sense+)>
+            // <!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
+            // k_eles are OPTIONAL, check for null value
+            if (entry.k_ele != null) {
+                k_eles = Array.isArray(entry.k_ele) ? entry.k_ele : [entry.k_ele];
+                for (let k_ele of k_eles) {
+                    if (k_ele.keb.includes(search_word)) {
                         found=true;
+                        //console.log("searchXML(): keb match: " + k_ele.keb);
+                        if (k_ele.keb == search_word) {
+                            console.log("searchXML(): exact keb match: " + k_ele.keb);
+                            exact_keb_match=true;
+                        }
+                    }
+                    if (!exact_keb_match && strip_hiragana(k_ele.keb) != "" && strip_hiragana(k_ele.keb) == strip_hiragana(search_word)) {
+                            // hiragana-less match
+                            console.log("searchXML(): kanaless match: " + k_ele.keb);
+                            hiraganaless_match=true;
+                            found=true;
+                    }
                 }
             }
         }
 
-        // one r_ele is always required so no need to check for null
-        r_eles = Array.isArray(entry.r_ele) ? entry.r_ele : [entry.r_ele];
-        for (let r_ele of r_eles) {
-            if (r_ele.reb.includes(search_word)) {
-                found=true;
-                //console.log("searchXML(): reb match: " + r_ele.reb);
-                if (r_ele.reb == search_word) {
-                    console.log("searchXML(): exact reb match: " + r_ele.reb);
-                    exact_reb_match=true;
+        // check for reb matches
+        if (search_word.match(/^(\p{Script=Hiragana}|\p{Script=Katakana})+$/gu) && search_word.match(/\p{Script=Han}/gu) == null) {
+            // one r_ele is always required so no need to check for null
+            // <!ELEMENT r_ele (reb, re_nokanji?, re_restr*, re_inf*, re_pri*)>
+            r_eles = Array.isArray(entry.r_ele) ? entry.r_ele : [entry.r_ele];
+            for (let r_ele of r_eles) {
+                if (r_ele.reb.includes(search_word)) {
+                    found=true;
+                    //console.log("searchXML(): reb match: " + r_ele.reb);
+                    if (r_ele.reb == search_word) {
+                        console.log("searchXML(): exact reb match: " + r_ele.reb);
+                        exact_reb_match=true;
+                    }
                 }
             }
         }
@@ -646,6 +694,70 @@ async function searchXML(search_word, display_search_term_header) {
         } // we don't add priority for kanaless, for now
 
 
+
+        // check for eng/ger matches
+        // copied from further below and modified to fit search-only
+        // I THINK we can just set priority directly since there are no mixed eng+jp or ger+jp dict entries
+        //ger_eng_exact_match = false; // priority for: exact one-to-one with gloss['#text'].toLowerCase().trim()
+        //ger_eng_semi_exact_match = false; // priority for: .includes() but considering spaces (e.g. "how" does not match "show")
+        // no priority for basic .includes() but we add them anyway why not
+        // <!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf*, lsource*, dial*, gloss*, example*)>
+        // there can be a LOT of glosses to match against so it probably makes sense to break out of
+        // this looping section as soon as possible, using a labeled code block
+        finding_block: if (ger_eng_search && search_word.toLowerCase().match(/[a-z]/)) {
+                senses = Array.isArray(entry.sense) ? entry.sense : [entry.sense];
+                for (sense of senses) {
+                    xml_lang = "";
+                    if(sense && sense.gloss != null) {
+                        glosses = Array.isArray(sense.gloss) ? sense.gloss : [sense.gloss];
+                        xml_lang = glosses[0]['@attributes']['xml:lang'];
+                    }
+
+                    if (xml_lang == "eng") {
+                        for(gloss of glosses) {
+                            if(gloss['#text']) {
+                                y = gloss['#text'].toLowerCase().trim();
+                                // exact match
+                                if(y == search_word) {
+                                    found=true;
+                                    if (priority < 2) { priority = 2; }
+                                    console.log("searchXML(): exact eng match: \"" + search_word + "\" -> \"" + y + "\"");
+                                    break finding_block; }
+                                // exact match of a part (while accounting for dashes)
+                                // adding spaces to begin and end so I don't have to
+                                // do regex fuckery with a string variable
+                                else if ((" " + y + " ").includes(" " + search_word + " ")
+                                    || (" " + y.replaceAll(/-/g,"") + " ").includes(" " + search_word.replaceAll(/-/g,"") + " ")) {
+                                    if (priority < 1) { priority = 1; }
+                                    console.log("searchXML(): semi-exact eng match: \"" + search_word + "\" -> \"" + y + "\"");
+                                    found=true; }
+                                else if (y.includes(search_word)) { found=true; }
+                            }
+                        }
+                    } else if (xml_lang == "ger") {
+                        for (gloss of glosses) {
+                            // copypasted from above
+                            if(gloss['#text']) {
+                                y = gloss['#text'].toLowerCase().trim();
+                                // exact match
+                                if(y == search_word) {
+                                    found=true;
+                                    if (priority < 2) { priority = 2; }
+                                    console.log("searchXML(): exact eng match: \"" + search_word + "\" -> \"" + y + "\""); }
+                                    break finding_block; }
+                                // exact match of a part (while accounting for dashes)
+                                // adding spaces to begin and end so I don't have to
+                                // do regex fuckery with a string variable
+                                else if ((" " + y + " ").includes(" " + search_word + " ")
+                                    || (" " + y.replaceAll(/-/g,"") + " ").includes(" " + search_word.replaceAll(/-/g,"") + " ")) {
+                                    if (priority < 1) { priority = 1; }
+                                    console.log("searchXML(): semi-exact eng match: \"" + search_word + "\" -> \"" + y + "\"");
+                                    found=true; }
+                                else if (y.includes(search_word)) { found=true; }
+                            }
+                        }
+                    }
+                }
 
 
         if (found) {
@@ -666,6 +778,7 @@ async function searchXML(search_word, display_search_term_header) {
 
             // BUILD LIST OF READINGS (rebs)
             // <!ELEMENT r_ele (reb, re_nokanji?, re_restr*, re_inf*, re_pri*)>
+            r_eles = Array.isArray(entry.r_ele) ? entry.r_ele : [entry.r_ele];
             for (r_ele of r_eles) {
                 // check if re_inf exists and contains search-only desc so we
                 // can skip displaying this reading
@@ -739,6 +852,7 @@ async function searchXML(search_word, display_search_term_header) {
             // <!ELEMENT entry (ent_seq, k_ele*, r_ele+, sense+)>
             // <!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
             if (entry.k_ele != null) {
+                k_eles = Array.isArray(entry.k_ele) ? entry.k_ele : [entry.k_ele];
                 k_ele_container = results_container_column.createElement("div");
                 k_ele_container.setAttribute("class","k_ele_container");
                 for (let i=0;i<k_eles.length;i++) {
@@ -832,7 +946,7 @@ async function searchXML(search_word, display_search_term_header) {
                 // english too
                 // according to documentation, gloss is OPTIONAL so...
                 xml_lang = "none!";
-                if(sense.gloss != null) {
+                if(sense && sense.gloss != null) {
                     glosses = Array.isArray(sense.gloss) ? sense.gloss : [sense.gloss];
                     xml_lang = glosses[0]['@attributes']['xml:lang'];
                 }
@@ -995,7 +1109,7 @@ async function searchXML(search_word, display_search_term_header) {
         results_container_column.body.children[0].before(toomanyresults);
     }
 
-    console.log("searchXML(): results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
+    //console.log("searchXML(): results_container_column.body.childElementCount: " + results_container_column.body.childElementCount);
     if(results_container_column.body.childElementCount < 2 && row_prio_container.childElementCount == 0) {
         no_results = results_container_column.createElement("div");
         no_results.textContent = "No results for \"" + search_word + "\"";
@@ -1030,7 +1144,7 @@ async function searchexec(optional_string, pushstate) {
     document.getElementById("search_field").value = "";
     if (search_field_contents != null && search_field_contents.match(/^\s*$/) == null) {
         console.log("searchexec(): search field was not empty, adding keywordbox for \"" + search_field_contents + "\"");
-        await keywordbox_add(search_field_contents);
+        await keywordbox_add(search_field_contents.trim());
     }
     // for safety, if we were passed a string, prioritize it over search field
     // worried about race conditions, I dunno
@@ -1041,6 +1155,8 @@ async function searchexec(optional_string, pushstate) {
 
         // direct search = replace current search
         while (document.getElementsByClassName("keywordbox")[0]) { document.getElementsByClassName("keywordbox")[0].remove(); }
+        keywordbox_add(optional_string);
+
     } else { console.log("searchexec(): is not direct search"); }
 
     // not sure how else to do this
@@ -1054,71 +1170,79 @@ async function searchexec(optional_string, pushstate) {
         document.getElementById("greeting_container").style.setProperty("display", "block");
         document.getElementById("results_container").style.setProperty("display", "none");
         // remove search word from url if there was any
-        url = window.location;
-        snip = url.href.match(/.*\?/);
-        if (snip != null) {
-            if (pushstate); {
-                window.history.pushState({},'',snip[0].slice(0,-1)); }
+        if (pushstate) {
+            //window.history.pushState({},'',window.location.href.split("?")[0]);
+            console.log("pushstate is true, removing keywords from url");
+            window.history.pushState( {}, '', window.location.pathname);
         }
         await status_update("");
         document.getElementsByTagName("title")[0].textContent = "JMdict Searcher";
         update_search_label();
         search_ongoing=false;
         disable_input(false);
+        if (results_counter != -1) { perf("") };
         return;
     }
 
     while (document.getElementsByClassName("results_container_column")[0]) {
         document.getElementsByClassName("results_container_column")[0].remove();
     }
-    // build search string (containing all key word strings, separated by spaces)
+
     full_search_string="";
-    if (is_direct_search) { full_search_string = optional_string; }
-    else  {
-        keywordbox_array = document.getElementsByClassName("keywordbox");
-        console.log("searchexec(): keywordbox_array.length = " + keywordbox_array.length);
-        for (v=0;v<keywordbox_array.length;v++) {
-            console.log("searchexec(): adding \"" + keywordbox_array[v].textContent + "\" to full_search_string");
-            full_search_string += keywordbox_array[v].textContent + " ";
-            console.log("searchexec(): full_search_string = " + full_search_string);
+    search_array = [];
+    if (is_direct_search) {
+        search_array = [ optional_string ];
+    } else {
+        for (keywordbox of document.getElementsByClassName("keywordbox")) {
+            search_array.push(keywordbox.textContent);
         }
-        full_search_string = full_search_string.slice(0,-1);
     }
 
 
-    search_array = full_search_string.split(/\s+/);
-    console.log("searchexec(): full_search_string = \"" + full_search_string + "\"");
-    console.log("searchexec(): search_array.length = \"" + search_array.length + "\"");
+    //search_array = full_search_string.split(/\s+/);
+    //console.log("searchexec(): full_search_string = \"" + full_search_string + "\"");
+    //console.log("searchexec(): search_array.length = \"" + search_array.length + "\"");
 
     results_counter=0;
     await disable_input(true);
     await unfocus();
     document.getElementById("greeting_container").style.setProperty("display", "none");
     // add search word to url
-    url = new URL(window.location);
-    url.searchParams.set('q', full_search_string);
-    if (pushstate) { window.history.pushState({}, '', url); }
-
+    //url = new URL(window.location);
+    //url.searchParams.set('q', full_search_string);
+    //if (pushstate) { window.history.pushState({}, '', url); }
+    if(pushstate) {
+        console.log("pushstate is true, pushing new keywords");
+        params = new URLSearchParams();
+        for (q of search_array) { params.append("q", q); }
+        //window.history.pushState({}, '', window.location.pathname);
+        new_url = window.location.pathname + "?" + params.toString();
+        console.log("new_url = " + new_url);
+        window.history.pushState({}, '', new_url);
+    }
     if (display_counter) {await results_counter_update(results_counter);}
 
     document.getElementById("results_container").innerHTML = "";
     await status_update("Searching");
     document.getElementsByTagName("title")[0].textContent = "";
     if(search_array.length > 1) { multisearch=true; } else { multisearch=false; }
-        for (let x=0;x<search_array.length;x++) {
-            console.log("searchexec(): Calling searchXML(\"" + search_array[x] + "\")");
-            if (search_array[x] !== null) {
-                if (x == 0) {
-                    document.getElementsByTagName("title")[0].textContent += search_array[x];
-                } else {
-                    document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
-                }
-                await searchXML(search_array[x], multisearch);
-
-                if (display_counter) {await results_counter_update(results_counter);}
+    t0 = performance.now();
+    for (let x=0;x<search_array.length;x++) {
+        console.log("searchexec(): Calling searchXML(\"" + search_array[x] + "\")");
+        if (search_array[x] !== null) {
+            if (x == 0) {
+                document.getElementsByTagName("title")[0].textContent += search_array[x];
+            } else {
+                document.getElementsByTagName("title")[0].textContent = document.getElementsByTagName("title")[0].textContent + "・" + search_array[x];
             }
+            await searchXML(search_array[x], multisearch);
+
+            if (display_counter) {await results_counter_update(results_counter);}
         }
-        await disable_input(false);
+    }
+    t1 = performance.now();
+    perf((t1 - t0).toString().split(".")[0] + " ms");
+    await disable_input(false);
     if (tracker_no_results) {
         await disable_input(false);
         focus();
@@ -1128,6 +1252,12 @@ async function searchexec(optional_string, pushstate) {
     await status_update("");
     search_ongoing=false;
     console.log("searchexec(): end");
+}
+
+// update perf display
+function perf(text) {
+    console.log("perf(): setting to \"" + text + "\"");
+    document.getElementById("perf").textContent = text;
 }
 
 // PASTE LOGIC
@@ -1153,18 +1283,22 @@ async function clear_paste() {
 
 // FORWARD / BACK BUTTON HANDLER
 window.addEventListener('popstate', async function(event) {
-    console.log("popstate event");
+    console.log("popstate event: " + window.location.href);
     url_query_params = new URLSearchParams(window.location.search);
-    url_query_search_word = url_query_params.get('q');
-    console.log("popstate event listener: url_query_search_word = " + url_query_search_word);
-    console.log("popstate event listener: url_query_params = " + url_query_params);
+    url_query_search_word = url_query_params.getAll('q');
+    console.log("url_query_search_word.length = " + url_query_search_word.length);
+    //console.log("popstate event listener: url_query_search_word = " + url_query_search_word);
+    //console.log("popstate event listener: url_query_params = " + url_query_params);
     clear_input();
-    search_words_array = url_query_search_word != null ? url_query_search_word.split(/\s+/) : [];
-    for (u=0;u<search_words_array.length;u++) {
-        console.log("popstate event listener: keywordbox_add(\"" + search_words_array[u] + "\")");
-        keywordbox_add(search_words_array[u]);
+    console.log("url_query_search_word.length = " + url_query_search_word.length);
+    for (q of url_query_search_word) {
+        console.log("keywordbox_add(" + q + ")");
+        //console.log("popstate event listener: keywordbox_add(\"" + search_words_array[u] + "\")");
+        keywordbox_add(q);
     }
+    console.log("url_query_search_word.length = " + url_query_search_word.length);
     searchexec(null, false); // do not push state
+    //searchexec();
 });
 
 
@@ -1173,8 +1307,106 @@ window.addEventListener('popstate', async function(event) {
 // originally just for focusing search bar, now additionally
 // having to emulate CTRL+A textbox behavior after having
 // added keywordbox feature (great idea)
-ctrl_a = 0; // 0 - nothing pressed, 1 - pressed control, 2 - pressed "a" after pressing control
+pressed_ctrl_a = false;
 function add_keydown_event(element) {
+    element.addEventListener("keydown", (e) => {
+
+        console.log("keydown event: " + e.key);
+        console.log("keydown event (begin): pressed_ctrl_a == " + pressed_ctrl_a);
+        update_search_label();
+        let x = e.key;
+        // whitelist, to prevent focus() from fucking with browser functions like F3 or CTRL+F5
+        if (x.match(/^[a-z]$/) != null
+            || x == " "
+            || x == "Control"
+            || x == "Backspace"
+            || x == "ArrowLeft"
+            || x == "ArrowRight"
+            || x == "Shift"
+            || x == "Return") {
+            //console.log("keydown event: calling focus() (focus search bar)");
+            focus();
+        }
+        else {
+            if(x == "ArrowUp"
+            || x == "ArrowDown"
+            || x == "Home"
+            || x == "End"
+            || x == "PageDown"
+            || x == "PageUp") {
+                //console.log("keydown event: focusing first results_container_column if there is one");
+                // text box needs immediate focus() for IME (CTRl+Space) to trigger but
+                // here we can add a safety delay
+                // this doesn't seem to work properly lol
+                col = document.getElementsByClassName("results_container_column")[0];
+                if (col != null) {
+                    setTimeout( () => {
+                        // animation
+                        //col.contentWindow.document.body.setAttribute("class","results_container_column_inside inset_shadow");
+                        //setTimeout( () => { col.contentWindow.document.body.setAttribute("class","results_container_column_inside"); }, 500);
+
+                        //console.log("keydown event: focusing results_container_column[0]");
+                        col.focus();
+                    }, 50);
+                    // even without the timeout, pressing arrow up/down or pgup/dn once
+                    // doesn't actually scroll the iframe yet, only after focus has been shifted
+                } //else { console.log("keydown event: no results_container_columns"); }
+            }
+        }
+
+        if (x == "Escape") {
+            // "return to frontpage" (= empty search)
+            searchexec(" ");
+            return;
+        }
+
+
+        if (x == "Insert" || x == "ScrollLock" || x == "Pause") { light_mode(); }
+
+
+
+        // to be safe, don't do ANY of this if input is currently disabled
+        if (document.getElementById("search_field").disabled == false) {
+            if (pressed_ctrl_a) {
+                if(e.key == "Backspace" || e.key == "Delete") {
+                    notification("Delete all search terms (CTRL+A -> " + e.key + ")");
+                    boxes = document.getElementsByClassName("keywordbox");
+                    while(boxes[0]) { boxes[0].remove(); }
+                    console.log("keydown event: trying to do some selection fuckery");
+                    frames = document.getElementsByTagName("iframe");
+                    for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
+                    document.getElementById("search_field").value = "";
+                    ctrl_a = 0;
+                }
+            }
+
+            // detect CTRL+V, start search if detected
+            console.log("checking pressed_ctrl_a before if(), " + pressed_ctrl_a);
+            if(pressed_ctrl_a && e.ctrlKey && e.key.toLowerCase() == "v") {
+                console.log("keydown event: pressed CTRL+V after CTRL+A, replacing search terms and starting search");
+                notification("CTRL+A → CTRL+V");
+                //while(boxes[0]) { boxes[0].remove(); }
+                setTimeout(() => { searchexec(document.getElementById("search_field").value); },50);
+            } else if (!pressed_ctrl_a && e.ctrlKey && e.key.toLowerCase() == "v") {
+                console.log("keydown event: pressed CTRL+V, starting search");
+                notification("CTRL+V");
+                setTimeout(() => { searchexec(); },50);
+            }
+        }
+
+        // delay so search_field input event listener has time to check pressed_ctrl_a?
+        if (e.ctrlKey && e.key.toLowerCase() == "a") {
+            notification("CTRL+A");
+            console.log("setting pressed_ctrl_a = true");
+            pressed_ctrl_a = true;
+        } else if (!e.ctrlKey || e.key.toLowerCase() == "v")  {
+            console.log("setting pressed_ctrl_a = false");
+            pressed_ctrl_a = false;
+        }
+        console.log("keydown event (end): pressed_ctrl_a == " + pressed_ctrl_a);
+    });
+}
+function add_keydown_event_backup(element) {
     element.addEventListener("keydown", (e) => {
 
         console.log("keydown event: " + e.key);
@@ -1189,7 +1421,7 @@ function add_keydown_event(element) {
             || x == "ArrowRight"
             || x == "Shift"
             || x == "Return") {
-            console.log("keydown event: calling focus() (focus search bar)");
+            //console.log("keydown event: calling focus() (focus search bar)");
             focus();
         }
         else {
@@ -1248,10 +1480,10 @@ function add_keydown_event(element) {
                     // refer to duplicate below in "else" section
                     setTimeout( () => {
                     if (document.getElementById("search_field").value.length > 0) {
-                        console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
+                        //console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
                         notification("Replace all search terms (CTRL+A)")
                         while(boxes[0]) {boxes[0].remove();}
-                        console.log("keydown event: trying to do some selection fuckery");
+                        //console.log("keydown event: trying to do some selection fuckery");
                         frames = document.getElementsByTagName("iframe");
                         for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
                         ctrl_a = 0;
@@ -1314,15 +1546,15 @@ last_clicked_element = null;
 function add_clipboard_event(element) {
     element.addEventListener("click", (event) => {
         let new_clipboard_text = "";
-        console.log("click event: element.tagName: " + element.tagName);
+        //console.log("click event: element.tagName: " + element.tagName);
         if (last_clicked_element == element) {
             if (element.getAttribute("class") == "kanjidic2_mr_container") {
-                console.log("click event: is kanjidic2_mr_container");
+                //console.log("click event: is kanjidic2_mr_container");
                 new_clipboard_text = element.children[0].textContent;
             } else {
-                console.log("click event: is NOT kanjidic2_mr_container");
+                //console.log("click event: is NOT kanjidic2_mr_container");
                 new_clipboard_text = element.textContent;
-                console.log("click event: trying to do some selection fuckery");
+                //console.log("click event: trying to do some selection fuckery");
                 frames = document.getElementsByTagName("iframe");
                 for (b=0;b<frames.length;b++) {
                     selection = frames[b].contentWindow.getSelection();
@@ -1461,6 +1693,7 @@ function global_css_var(name, value, target_iframe) {
         <input type="submit" value="Paste (Replace)" onClick="clear_paste()" id="clear_paste" disabled>
         <div id="search_field_parent" class="search_field_parent_disabled">
             <input type="text" autocomplete="off" name="literal" id="search_field" disabled>
+            <div id="perf"></div>
             <input type="submit" value=" " onClick="clear_input()" id="clear" disabled>
         </div>
         <input type="submit" value="Search" onClick="searchexec()" id="search_button" disabled>
