@@ -11,6 +11,10 @@
         <script language="JavaScript" type="text/javascript">
 
 
+        window.onerror = function(message, url, line, col, errorObj) {
+            notification(message);
+        };
+
 function keywordbox_add(search_word, disabled) {
     console.log("keywordbox_add(): begin");
     console.log("keywordbox_add(): search_word = " + search_word);
@@ -478,6 +482,14 @@ async function searchXML(search_word, display_search_term_header) {
     if (light_mode_enabled) { light_mode(results_container_column); }
 
     add_keydown_event(results_container_column);
+
+    // x button to instantly hide results window
+    /* x_button = results_container_column.createElement("div");
+    x_button.textContent = search_word;
+    results_container_column.body.appendChild(x_button);
+    x_button.addEventListener("click", (e) => {
+        console.log(e.target.textContent);
+    });*/
 
     // kanjidic2 query
     found_kanji=false;
@@ -1217,12 +1229,12 @@ async function searchexec(optional_string, pushstate) {
     t1 = performance.now();
     perf((t1 - t0).toString().split(".")[0] + " ms");
     await disable_input(false);
-    if (tracker_no_results) {
+    /*if (tracker_no_results) {
         await disable_input(false);
         focus();
     } else {
         document.getElementsByClassName("results_container_column")[0].focus();
-    }
+    }*/
     await status_update("");
     search_ongoing=false;
     console.log("searchexec(): end");
@@ -1517,27 +1529,41 @@ function clipboard(text) {
 
 // ADD CLIPBOARD FUNCTIONALITY
 last_clicked_element = null;
+clicked = 0;
 function add_clipboard_event(element) {
     element.addEventListener("click", (event) => {
+        //console.log("click event begin: clicked == " + clicked);
         let new_clipboard_text = "";
-        //console.log("click event: element.tagName: " + element.tagName);
         if (last_clicked_element == element) {
-            if (element.getAttribute("class") == "kanjidic2_mr_container") {
-                //console.log("click event: is kanjidic2_mr_container");
-                new_clipboard_text = element.children[0].textContent;
-            } else {
-                //console.log("click event: is NOT kanjidic2_mr_container");
-                new_clipboard_text = element.textContent;
-                //console.log("click event: trying to do some selection fuckery");
-                frames = document.getElementsByTagName("iframe");
-                for (b=0;b<frames.length;b++) {
-                    selection = frames[b].contentWindow.getSelection();
-                    if ( selection != null) { selection.removeAllRanges(); }
-                }
-            }
+            switch (clicked) {
+                case 0:
+                    clicked = 1;
+                    notification("Click one more time to copy to clipboard");
+                    break;
 
-            clipboard(new_clipboard_text);
-        } else { notification("Click again to copy to clipboard"); last_clicked_element = element; }
+                case 1:
+                    clicked = 2;
+                    if (element.getAttribute("class") == "kanjidic2_mr_container") {
+                        new_clipboard_text = element.children[0].textContent;
+                    } else {
+                        new_clipboard_text = element.textContent;
+                    }
+                    clipboard(new_clipboard_text);
+                    break;
+
+                case 2:
+                    clicked = 3;
+                    break;
+
+                default:
+                    clicked = 0;
+                    break;
+            }
+        } else {
+            clicked = 0;
+            notification("Click two more times to copy to clipboard");
+        }
+        last_clicked_element = element;
     });
 }
 

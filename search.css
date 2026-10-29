@@ -220,6 +220,7 @@ flex-grow:1;
 
 .row_container:has(.kanjidic2_kanji) {
     border-bottom-color:var(--accent);
+    background-color: color-mix(in srgb, var(--accent), var(--bg1) 91%);
 }
 
 
