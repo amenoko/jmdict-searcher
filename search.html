@@ -392,7 +392,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     console.log("DOMContentLoaded event: ");
     url_query_params = new URLSearchParams(window.location.search);
     url_query_search_word = url_query_params.get('q');
-    await disable_input(false);
     init_status = await init();
     await keywordbox_init();
     if(init_status == 1) {
@@ -434,6 +433,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
     //let user hide perf number
     document.getElementById("perf").addEventListener("click", (e) => { e.target.style.display = "none"; });
+
+    await disable_input(false);
 }, false);
 
 //iframe_counter = 0; // for self-identification
@@ -1532,7 +1533,7 @@ last_clicked_element = null;
 clicked = 0;
 function add_clipboard_event(element) {
     element.addEventListener("click", (event) => {
-        //console.log("click event begin: clicked == " + clicked);
+        console.log("click event begin: clicked == " + clicked);
         let new_clipboard_text = "";
         if (last_clicked_element == element) {
             switch (clicked) {
