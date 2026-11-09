@@ -24,7 +24,7 @@ function keywordbox_add(search_word, disabled) {
         return;
     }
     box = document.createElement("div");
-    box.textContent = search_word;
+    box.textContent = search_word.trim();
     if (disabled == null) { disabled = false; }
     if (!disabled) { box.setAttribute("class", "keywordbox"); }
     else { box.setAttribute("class", "keywordbox grey"); }
@@ -40,8 +40,9 @@ function keywordbox_add(search_word, disabled) {
     });
     console.log("keywordbox_add(): appending box with text \"" + box.textContent + "\"");
     box.appendChild(x);
+
     console.log("keywordbox_add(): clearing search_field");
-    document.getElementById("search_field").value = "";
+    document.getElementById("search_field").value = document.getElementById("search_field").value.slice(search_word.length).trim();
     last_cur_pos=0;
     update_search_label();
 }
@@ -92,6 +93,7 @@ async function keywordbox_init() {
             for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
         }
 
+        // submitting a keyword (cursor is at the end and user presses space)
         if (event.target.value.match(/^\s*$/) == null
          && event.target.selectionStart == event.target.value.length) {
                 // always submit if two or more whitespaces at the end
@@ -109,6 +111,17 @@ async function keywordbox_init() {
                     keywordbox_add(event.target.value.trim());
                     event.target.value = event.target.value.slice(0,-1);
                 }
+        }
+
+        // splitting new keyword from an existing multisearch (after pressing left a bunch of times)
+        // if two spaces (no matter what kind) are detected to the left of the cursor position,
+        // everything up until that position will be added as a new box, then cut from search input
+        if (search_field.value.slice(0,search_field.selectionEnd).match(/^\s*$/) == null) {
+            if (search_field.value.slice(search_field.selectionEnd-2,search_field.selectionEnd).match(/^\s\s$/)) {
+                keywordbox_add(search_field.value.slice(0, search_field.selectionEnd), null, true);
+            } else if (search_field.value.slice(search_field.selectionEnd-1,search_field.selectionEnd+1).match(/^\s\s$/)) {
+                keywordbox_add(search_field.value.slice(0, search_field.selectionEnd), null, true);
+            }
         }
     });
 
@@ -1131,7 +1144,12 @@ async function searchexec(optional_string, pushstate) {
     document.getElementById("search_field").value = "";
     if (search_field_contents != null && search_field_contents.match(/^\s*$/) == null) {
         console.log("searchexec(): search field was not empty, adding keywordbox for \"" + search_field_contents + "\"");
-        await keywordbox_add(search_field_contents.trim());
+
+        // if user pastes string with only japanese text and spaces, split by spaces
+        // (we did this anyway until we added eng/ger search)
+        if (search_field_contents.match(/^(\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\s)+$/gu)) {
+            for (k of search_field_contents.trim().split(/\s+/)) keywordbox_add(k);
+        } else await keywordbox_add(search_field_contents.trim());
     }
     // for safety, if we were passed a string, prioritize it over search field
     // worried about race conditions, I dunno

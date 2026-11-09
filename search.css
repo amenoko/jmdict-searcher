@@ -446,6 +446,7 @@ input.keywordbox_x:hover {
     color: var(--fg3);
     align-content:center;
     white-space: nowrap;
+    z-index: -1;
 }
 
 .grey { color:var(--fg2); border-color:var(--fg2); }
