@@ -319,7 +319,10 @@ async function toggle_jmnquery(desired_state) {
     if(desired_state == null) desired_state = true;
     if (!jmnquery) {
         if (jmn == null) {
+            t0 = performance.now();
             await init_jmn();
+            t1 = performance.now();
+            perf((t1 - t0).toString().split(".")[0] + " ms");
             jmnquery = true;
             notification("Enabled Names Search");
         } else {
