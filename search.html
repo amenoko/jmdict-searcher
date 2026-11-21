@@ -1180,13 +1180,18 @@ async function searchXML(search_word, display_search_term_header) {
 
                 // build list of kana
                 if (entry.kana.length > 0) {
-                    for (kana of entry.kana) {
+                    for (let x=0; x<entry.kana.length;x++) {
+                        kana = entry.kana[x];
                         new_html_element = results_container_column.createElement("div");
                         if (entry.kanji.length > 0) new_html_element.setAttribute("class","reb");
                         else new_html_element.setAttribute("class", "reb_white");
                         new_html_element.textContent = kana.text;
                         add_clipboard_event(new_html_element);
                         meanings_readings.appendChild(new_html_element);
+                        if ((x+1) != entry.kana.length) {
+                            line_break = results_container_column.createElement("br");
+                            meanings_readings.appendChild(line_break);
+                        }
                     }
                 }
 
@@ -1194,12 +1199,17 @@ async function searchXML(search_word, display_search_term_header) {
                 if (entry.kanji.length > 0) {
                     kanji_container = results_container_column.createElement("div");
                     kanji_container.setAttribute("class", "k_ele_container");
-                    for (kanji of entry.kanji) {
+                    for (let x=0;x<entry.kanji.length;x++) {
+                        kanji = entry.kanji[x];
                         new_html_element = results_container_column.createElement("div");
                         new_html_element.setAttribute("class","keb");
                         add_clipboard_event(new_html_element);
                         new_html_element.textContent = kanji.text;
                         kanji_container.appendChild(new_html_element);
+                        if ((x+1) != entry.kanji.length) {
+                            line_break = results_container_column.createElement("br");
+                            kanji_container.appendChild(line_break);
+                        }
                     }
                     meanings_readings.appendChild(kanji_container);
                 }
