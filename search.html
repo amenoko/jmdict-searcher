@@ -1143,20 +1143,27 @@ async function searchXML(search_word, display_search_term_header) {
 
     // jmnedict query (names)
     if (jmnquery) {
+        row_names_prio_container = results_container_column.createElement("div");
+        row_names_prio_container.setAttribute("class", "row_names_prio_container");
+        results_container_column.body.appendChild(row_names_prio_container);
         for (x=0;x<jmn.words.length;x++) {
             entry=jmn.words[x];
             found_name=false;
+            exact_match=false;
             // loop through text elements of kanji, kana, then translation
             for (kana of entry.kana) {
-                if (search_word.includes(kana.text)) found_name=true;
+                if (kana.text.includes(search_word)) found_name=true;
+                if (kana.text == search_word) exact_match=true;
             }
             for (kanji of entry.kanji) {
-                if (search_word.includes(kanji.text)) found_name=true;
+                if (kanji.text.includes(search_word)) found_name=true;
+                if (kanji.text == search_word) exact_match=true;
             }
             // 2 levels deep for some reason
             for (t1 of entry.translation) {
                 for (t2 of t1.translation) {
-                    if (search_word.toLowerCase().includes(t2.text.toLowerCase())) found_name=true;
+                    if (t2.text.toLowerCase().includes(search_word.toLowerCase())) found_name=true;
+                    if (t2.text.toLowerCase() == search_word.toLowerCase()) exact_match=true;
                 }
             }
 
@@ -1231,7 +1238,8 @@ async function searchXML(search_word, display_search_term_header) {
 
                 results_tally++;
                 if (results_tally <= 1000) {
-                    results_container_column.body.appendChild(row_container);
+                    if (!exact_match) results_container_column.body.appendChild(row_container);
+                    else row_names_prio_container.before(row_container);
                 } else { discarded++; }
             }
         }
