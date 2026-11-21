@@ -4,7 +4,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <link rel="manifest" href="manifest.json">
-        <title>JMdict Searcher</title>
+        <title>JM Searcher</title>
         <link href="search.css" rel="stylesheet" />
         <script src="pako.min.js"></script>
         <script src="fxparser.min.js"></script>
@@ -313,6 +313,50 @@ function update_search_label() {
 // used for determining whether to focus after a search
 tracker_no_results = false;
 
+jmn = null;
+jmnquery = false;
+async function toggle_jmnquery(desired_state) {
+    if(desired_state == null) desired_state = true;
+    if (!jmnquery) {
+        if (jmn == null) {
+            await init_jmn();
+            jmnquery = true;
+            notification("Enabled Names Search");
+        } else {
+            jmnquery = true;
+            notification("Enabled Names Search");
+        }
+    }
+    else {
+        jmnquery = false;
+        notification("Disabled Names Search");
+    }
+}
+
+async function init_jmn() {
+    try {
+        await notification("Loading JMnedict", 4000);
+        console.log("init(): fetching jmnedict file (" + Date() + ")");
+        const response = await fetch("jmnedict-all-3.6.2.json.gz");
+        console.log("init(): response status: " + response.status);
+        if (!response.ok) {
+            throw new Error("Response status: ${response.status}");
+        }
+
+        const result = await response.arrayBuffer();
+        inflateme = new Uint8Array(result);
+        console.log("init(): unzipping & parsing");
+        jmn = JSON.parse(pako.ungzip(inflateme,{ 'to': 'string' }));
+        console.log("init(): done (" + Date() + ")");
+
+    } catch (error) {
+        await notification("Error loading kanjidic", 4000);
+        console.error(error.message);
+        ui_log("init(): error: " + error.message);
+        return 2;
+    }
+}
+
 // INIT
 async function init() {
     console.log("init(): begin (" + Date() + ")");
@@ -370,6 +414,7 @@ async function init() {
         ui_log("init(): error: " + error.message);
         return 2;
     }
+
     ui_log("init(): end (" + Date() + ")");
     await notification(null, 3); // null = don't change text; for dismissing notifications
     return new Promise(resolve => setTimeout(resolve, 0));
@@ -432,6 +477,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     add_keydown_event(document.getElementById("results_container"));
     add_keydown_event(document.getElementById("greeting_container").contentWindow.document);
     document.getElementById("greeting_container").contentWindow.document.getElementById("light_mode_button").addEventListener("click", () => { light_mode(); });
+    document.getElementById("greeting_container").contentWindow.document.getElementById("names_search_button").addEventListener("click", () => { toggle_jmnquery(); });
     document.getElementById("search_field").addEventListener("input", () => { update_search_label(); });
     document.getElementById("greeting_container").contentWindow.document.getElementById("two_column_button").addEventListener("click", () => {
         e = document.createElement("link");
@@ -1094,6 +1140,103 @@ async function searchXML(search_word, display_search_term_header) {
         } // end of if (found)
 
     }// end of jmdict main for-loop
+
+    // jmnedict query (names)
+    if (jmnquery) {
+        for (x=0;x<jmn.words.length;x++) {
+            entry=jmn.words[x];
+            found_name=false;
+            // loop through text elements of kanji, kana, then translation
+            for (kana of entry.kana) {
+                if (search_word.includes(kana.text)) found_name=true;
+            }
+            for (kanji of entry.kanji) {
+                if (search_word.includes(kanji.text)) found_name=true;
+            }
+            // 2 levels deep for some reason
+            for (t1 of entry.translation) {
+                for (t2 of t1.translation) {
+                    if (search_word.toLowerCase().includes(t2.text.toLowerCase())) found_name=true;
+                }
+            }
+
+            if(found_name) {
+                row_container = results_container_column.createElement("div");
+                row_container.setAttribute("class", "row_container");
+                row_container.setAttribute("entry_id", entry.id);
+                row_container.setAttribute("array_index", x);
+
+                // modelling after the jmdict results (for now)
+                meanings_readings = results_container_column.createElement("div");
+                meanings_readings.setAttribute("class","meanings_readings");
+                row_container.appendChild(meanings_readings);
+
+                // build list of kana
+                if (entry.kana.length > 0) {
+                    for (kana of entry.kana) {
+                        new_html_element = results_container_column.createElement("div");
+                        if (entry.kanji.length > 0) new_html_element.setAttribute("class","reb");
+                        else new_html_element.setAttribute("class", "reb_white");
+                        new_html_element.textContent = kana.text;
+                        add_clipboard_event(new_html_element);
+                        meanings_readings.appendChild(new_html_element);
+                    }
+                }
+
+                // build list of kanji
+                if (entry.kanji.length > 0) {
+                    kanji_container = results_container_column.createElement("div");
+                    kanji_container.setAttribute("class", "k_ele_container");
+                    for (kanji of entry.kanji) {
+                        new_html_element = results_container_column.createElement("div");
+                        new_html_element.setAttribute("class","keb");
+                        add_clipboard_event(new_html_element);
+                        new_html_element.textContent = kanji.text;
+                        kanji_container.appendChild(new_html_element);
+                    }
+                    meanings_readings.appendChild(kanji_container);
+                }
+
+                // build list of translations
+                if (entry.translation.length > 0) {
+                    tl_container = results_container_column.createElement("div");
+                    tl_container.setAttribute("class","senses_container");
+                    row_container.appendChild(tl_container);
+                    for (translations of entry.translation) {
+                        if (translations.translation.length > 0) {
+                            tl_block_container = results_container_column.createElement("div");
+                            tl_block_container.setAttribute("class","senses_block_container");
+                            tl_texts = "";
+                            tl_types = "";
+
+                            for (translation of translations.translation) {
+                                tl_texts += translation.text + ", ";
+                            }
+                            tl_texts_element = results_container_column.createElement("div");
+                            tl_texts_element.setAttribute("class", "senses_glosses");
+                            tl_texts_element.textContent = tl_texts.slice(0,-2);
+                            tl_block_container.appendChild(tl_texts_element);
+                            tl_extra_element = results_container_column.createElement("div");
+                            tl_extra_element.setAttribute("class", "senses_extras");
+
+                            for (tltype of translations.type) {
+                                tl_types += jmn.tags[tltype] + ", ";
+                            }
+                            tl_extra_element.textContent = tl_types.slice(0,-2);
+                            tl_block_container.appendChild(tl_extra_element);
+                            tl_container.appendChild(tl_block_container);
+                        }
+                    }
+                }
+
+                results_tally++;
+                if (results_tally <= 1000) {
+                    results_container_column.body.appendChild(row_container);
+                } else { discarded++; }
+            }
+        }
+    }
+
     if (display_counter) { await results_counter_update(results_counter); }
     new_iframe.style.setProperty("display", "block");
 
@@ -1181,7 +1324,7 @@ async function searchexec(optional_string, pushstate) {
             window.history.pushState( {}, '', window.location.pathname);
         }
         await status_update("");
-        document.getElementsByTagName("title")[0].textContent = "JMdict Searcher";
+        document.getElementsByTagName("title")[0].textContent = "JM Searcher";
         update_search_label();
         search_ongoing=false;
         disable_input(false);

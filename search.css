@@ -44,7 +44,7 @@ body, #search_button,
 .senses_glosses, .senses_container, .meanings_readings,
 .row_container, .kanji_mr_container,
 .results_container_column_inside, #light_mode_button,
-#two_column_button
+#two_column_button, #names_search_button
 { font-size: 14px; }
 #search_field, .search_term_header, .reb_white, .keywordbox
 { font-size: 18px; }
@@ -91,7 +91,7 @@ body, #search_button,
     { margin-top:6px; }
 .row_container, #greeting
     { padding: 6px; }
-#search_button, #light_mode_button, #two_column_button
+#search_button, #light_mode_button, #two_column_button, #names_search_button
     { padding: 6px;}
 /* for horizontal lists, margin-right */
 #search_field_parent, #search_button, #status, #paste, #clear_paste, #results_count, #perf
@@ -277,21 +277,21 @@ input, #search_field_parent  {
     color: var(--fg1);
     transition: all 0.5 ease;
 }
-:is(#clear, #search_button, #paste, #clear_paste, #light_mode_button, #two_column_button):hover {
+:is(#clear, #search_button, #paste, #clear_paste, #light_mode_button, #two_column_button, #names_search_button):hover {
     background-color: var(--bg3);
     color: var(--fgh);
     opacity:1;
 }
 
 #search_button, #paste, #clear_paste, #search_field_parent,
-#light_mode_button, #two_column_button {
+#light_mode_button, #two_column_button, #names_search_button {
     border: solid 1px;
     border-color: var(--accent);
     border-radius:4px;
 }
 #clear_paste, #paste { white-space:normal;}
 
-:is(#search_button, #paste, #clear, #clear_paste, #light_mode_button, #two_column_button):active {
+:is(#search_button, #paste, #clear, #clear_paste, #light_mode_button, #two_column_button, #names_search_button):active {
     background-color: var(--accent);
     color: var(--bg1);
 }
