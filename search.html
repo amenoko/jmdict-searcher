@@ -338,7 +338,7 @@ async function toggle_jmnquery(desired_state) {
 
 async function init_jmn() {
     try {
-        await notification("Loading JMnedict", 4000);
+        await notification("Loading JMnedict...", 4000);
         console.log("init(): fetching jmnedict file (" + Date() + ")");
         const response = await fetch("jmnedict-all-3.6.2.json.gz");
         console.log("init(): response status: " + response.status);
