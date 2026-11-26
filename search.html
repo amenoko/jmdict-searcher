@@ -1477,6 +1477,14 @@ window.addEventListener('popstate', async function(event) {
 // having to emulate CTRL+A textbox behavior after having
 // added keywordbox feature (great idea)
 pressed_ctrl_a = false;
+// if user is manually selecting text on the page do not grab CTRL
+const has_selection = () => {
+    window.getSelection().toString().length > 0;
+    if (window.getSelection().toString()) return true;
+    return Array.from(document.querySelectorAll('iframe')).some(iframe => {
+        return iframe.contentWindow.getSelection().toString().length > 0;
+    });
+};
 function add_keydown_event(element) {
     element.addEventListener("keydown", (e) => {
 
@@ -1494,7 +1502,7 @@ function add_keydown_event(element) {
             || x == "Shift"
             || x == "Return") {
             //console.log("keydown event: calling focus() (focus search bar)");
-            focus();
+            !has_selection() && focus(); // if (has_selection() == false) { focus(); }
         }
         else {
             if(x == "ArrowUp"
@@ -1515,7 +1523,7 @@ function add_keydown_event(element) {
                         //setTimeout( () => { col.contentWindow.document.body.setAttribute("class","results_container_column_inside"); }, 500);
 
                         //console.log("keydown event: focusing results_container_column[0]");
-                        col.focus();
+                        !has_selection() && focus();
                     }, 50);
                     // even without the timeout, pressing arrow up/down or pgup/dn once
                     // doesn't actually scroll the iframe yet, only after focus has been shifted
@@ -1525,7 +1533,9 @@ function add_keydown_event(element) {
 
         if (x == "Escape") {
             // "return to frontpage" (= empty search)
-            searchexec(" ");
+            if (!has_selection()) searchexec(" ");
+            else for (x of document.querySelectorAll('iframe')) x.contentWindow.getSelection().removeAllRanges();
+
             return;
         }
 
@@ -1562,6 +1572,13 @@ function add_keydown_event(element) {
                 setTimeout(() => { searchexec(); },50);
             }
         }
+
+        // make it possible to manually select, CTRL+C and then CTRL+V without having to press into
+        // the search bar again
+        if(e.ctrlKey && e.key.toLowerCase() == "c") setTimeout(() => {
+            notification("Selection cleared (CTRL+C)");
+            for (x of document.querySelectorAll('iframe')) x.contentWindow.getSelection().removeAllRanges();
+        }, 100);
 
         // delay so search_field input event listener has time to check pressed_ctrl_a?
         if (e.ctrlKey && e.key.toLowerCase() == "a") {
@@ -1717,6 +1734,8 @@ function add_clipboard_event(element) {
     element.addEventListener("click", (event) => {
         console.log("click event begin: clicked == " + clicked);
         let new_clipboard_text = "";
+        // click an element 3 times to copy it (we don't do this anymore)
+        /*
         if (last_clicked_element == element) {
             switch (clicked) {
                 case 0:
@@ -1746,7 +1765,14 @@ function add_clipboard_event(element) {
             clicked = 0;
             notification("Click two more times to copy to clipboard");
         }
-        last_clicked_element = element;
+        last_clicked_element = element;*/
+
+        if (element.getAttribute("class") == "kanjidic2_mr_container") {
+            new_clipboard_text = element.children[0].textContent;
+        } else {
+            new_clipboard_text = element.textContent;
+        }
+        clipboard(new_clipboard_text);
     });
 }
 
