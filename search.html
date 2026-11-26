@@ -12,7 +12,7 @@
 
 
         window.onerror = function(message, url, line, col, errorObj) {
-            notification(message);
+            notification("Error: " + message);
         };
 
 function keywordbox_add(search_word, disabled) {
@@ -324,15 +324,15 @@ async function toggle_jmnquery(desired_state) {
             t1 = performance.now();
             perf((t1 - t0).toString().split(".")[0] + " ms");
             jmnquery = true;
-            notification("Enabled Names Search");
+            notification("Enable name search");
         } else {
             jmnquery = true;
-            notification("Enabled Names Search");
+            notification("Enable name search");
         }
     }
     else {
         jmnquery = false;
-        notification("Disabled Names Search");
+        notification("Disable name search");
     }
 }
 
@@ -1533,8 +1533,13 @@ function add_keydown_event(element) {
 
         if (x == "Escape") {
             // "return to frontpage" (= empty search)
-            if (!has_selection()) searchexec(" ");
-            else for (x of document.querySelectorAll('iframe')) x.contentWindow.getSelection().removeAllRanges();
+            if (!has_selection()) {
+                notification("Return to front page (ESC)");
+                searchexec(" ");
+            } else {
+                notification("Clear selection (ESC)");
+                for (x of document.querySelectorAll('iframe')) x.contentWindow.getSelection().removeAllRanges();
+            }
 
             return;
         }
@@ -1548,7 +1553,7 @@ function add_keydown_event(element) {
         if (document.getElementById("search_field").disabled == false) {
             if (pressed_ctrl_a) {
                 if(e.key == "Backspace" || e.key == "Delete") {
-                    notification("Delete all search terms (CTRL+A -> " + e.key + ")");
+                    notification("Delete all search terms (CTRL+A → " + e.key + ")");
                     boxes = document.getElementsByClassName("keywordbox");
                     while(boxes[0]) { boxes[0].remove(); }
                     console.log("keydown event: trying to do some selection fuckery");
@@ -1568,7 +1573,7 @@ function add_keydown_event(element) {
                 setTimeout(() => { searchexec(document.getElementById("search_field").value); },50);
             } else if (!pressed_ctrl_a && e.ctrlKey && e.key.toLowerCase() == "v") {
                 console.log("keydown event: pressed CTRL+V, starting search");
-                notification("CTRL+V");
+                notification("Start search (CTRL+V)");
                 setTimeout(() => { searchexec(); },50);
             }
         }
@@ -1576,13 +1581,13 @@ function add_keydown_event(element) {
         // make it possible to manually select, CTRL+C and then CTRL+V without having to press into
         // the search bar again
         if(e.ctrlKey && e.key.toLowerCase() == "c") setTimeout(() => {
-            notification("Selection cleared (CTRL+C)");
+            notification("Clear selection (CTRL+C)");
             for (x of document.querySelectorAll('iframe')) x.contentWindow.getSelection().removeAllRanges();
         }, 100);
 
         // delay so search_field input event listener has time to check pressed_ctrl_a?
         if (e.ctrlKey && e.key.toLowerCase() == "a") {
-            notification("CTRL+A");
+            notification("Select all search terms (CTRL+A)");
             console.log("setting pressed_ctrl_a = true");
             pressed_ctrl_a = true;
         } else if (!e.ctrlKey || e.key.toLowerCase() == "v")  {
@@ -1592,139 +1597,12 @@ function add_keydown_event(element) {
         console.log("keydown event (end): pressed_ctrl_a == " + pressed_ctrl_a);
     });
 }
-function add_keydown_event_backup(element) {
-    element.addEventListener("keydown", (e) => {
-
-        console.log("keydown event: " + e.key);
-        update_search_label();
-        let x = e.key;
-        // whitelist, to prevent focus() from fucking with browser functions like F3 or CTRL+F5
-        if (x.match(/^[a-z]$/) != null
-            || x == " "
-            || x == "Control"
-            || x == "Backspace"
-            || x == "ArrowLeft"
-            || x == "ArrowRight"
-            || x == "Shift"
-            || x == "Return") {
-            //console.log("keydown event: calling focus() (focus search bar)");
-            focus();
-        }
-        else {
-            if(x == "ArrowUp"
-            || x == "ArrowDown"
-            || x == "Home"
-            || x == "End"
-            || x == "PageDown"
-            || x == "PageUp") {
-                //console.log("keydown event: focusing first results_container_column if there is one");
-                // text box needs immediate focus() for IME (CTRl+Space) to trigger but
-                // here we can add a safety delay
-                // this doesn't seem to work properly lol
-                col = document.getElementsByClassName("results_container_column")[0];
-                if (col != null) {
-                    setTimeout( () => {
-                        // animation
-                        //col.contentWindow.document.body.setAttribute("class","results_container_column_inside inset_shadow");
-                        //setTimeout( () => { col.contentWindow.document.body.setAttribute("class","results_container_column_inside"); }, 500);
-
-                        //console.log("keydown event: focusing results_container_column[0]");
-                        col.focus();
-                    }, 50);
-                    // even without the timeout, pressing arrow up/down or pgup/dn once
-                    // doesn't actually scroll the iframe yet, only after focus has been shifted
-                } //else { console.log("keydown event: no results_container_columns"); }
-            }
-        }
-
-        if (x == "Escape") {
-            // "return to frontpage" (= empty search)
-            searchexec(" ");
-            return;
-        }
-
-
-        if (x == "Insert" || x == "ScrollLock" || x == "Pause") { light_mode(); }
-
-        // to be safe, don't do ANY of this if input is currently disabled
-        if (document.getElementById("search_field").disabled == false) {
-            // track ctrl+alt+a (jank)
-            console.log("keydown event: ctrl_a == " + ctrl_a);
-            if (e.key == "Control") {
-                if (ctrl_a == 0) { ctrl_a = 1; }
-            }
-            else if (e.key.toLowerCase() == "a") {
-                if ( ctrl_a == 1 ) {
-                    console.log("keydown event: pressed \"a\"");
-                    console.log("keydown event: if next key is backspace, del or new input into search field, all previous keywordboxes will be deleted");
-                    notification("CTRL+A");
-                    ctrl_a = 2; // if next key is backspace, delete all keywordboxes
-                } else if (ctrl_a == 2) {
-                    // have to hard code for "a" because the "else" portion below isn't
-                    // executed if user presses "a"
-                    console.log("keydown event: pressed \"a\" after having pressed CTRL+A");
-                    // refer to duplicate below in "else" section
-                    setTimeout( () => {
-                    if (document.getElementById("search_field").value.length > 0) {
-                        //console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
-                        notification("Replace all search terms (CTRL+A)")
-                        while(boxes[0]) {boxes[0].remove();}
-                        //console.log("keydown event: trying to do some selection fuckery");
-                        frames = document.getElementsByTagName("iframe");
-                        for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
-                        ctrl_a = 0;
-                    }},100);
-                }
-            }
-            else if (e.key == "Backspace" || e.key == "Delete") {
-                if (ctrl_a == 2 || ctrl_a == 3) {
-                    console.log("keydown event: detected CTRL+A -> DEL or BACKSPACE, deleting all search terms");
-                    notification("Delete all search terms (CTRL+A)");
-                    boxes = document.getElementsByClassName("keywordbox");
-                    while(boxes[0]) { boxes[0].remove(); }
-                    console.log("keydown event: trying to do some selection fuckery");
-                    frames = document.getElementsByTagName("iframe");
-                    for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
-                    document.getElementById("search_field").value = "";
-                    ctrl_a = 0;
-                }
-            }
-            else {
-                // duplicate of above (a) (except for ctrl_a == 2 check)
-                setTimeout( () => {
-                if (document.getElementById("search_field").value.length > 0 && ctrl_a == 2) {
-                    console.log("keydown event: new input in search_field, deleting all previous keywordboxes");
-                    notification("Replace search terms (CTRL+A)");
-                    while(boxes[0]) {boxes[0].remove();}
-                    console.log("keydown event: trying to do some selection fuckery");
-                    frames = document.getElementsByTagName("iframe");
-                    for (b=0;b<frames.length;b++) { frames[b].contentWindow.getSelection().removeAllRanges(); }
-                }
-
-                // detect CTRL+V, start search if detected
-                if (e.key.toLowerCase() == "v" && ctrl_a == 1 && document.getElementById("search_field").value.length > 0) {
-                        console.log("keydown event: pressed CTRL+V, starting search");
-                        notification("CTRL+V: Start search");
-                        setTimeout( () => { searchexec(); }, 100);
-                    }
-                    else if (e.key.toLowerCase() == "v" && ctrl_a == 2 && document.getElementById("search_field").value.length > 0) {
-                        console.log("keydown event: pressed CTRL+V after CTRL+A, replacing search terms and starting search");
-                        notification("Replace search terms and start search (CTRL+A → CTRL+V)");
-                        while(boxes[0]) { boxes[0].remove(); }
-                        setTimeout( () => { searchexec(); }, 100);
-                }
-                ctrl_a = 0;
-                }, 100);
-            }
-        }
-    });
-}
 
 // copy to clipboard from eventhandler
 function clipboard(text) {
     navigator.clipboard.writeText(text);
     console.log("clipboard(): copy to clipboard: " + text);
-    notification("Copied: " + text);
+    notification("Copy: " + text);
 }
 
 // ADD CLIPBOARD FUNCTIONALITY
@@ -1842,7 +1720,7 @@ function light_mode(add_to) {
     // toggle / modify globally
     if (light_mode_enabled) {
         // disable it
-        notification("Disabling Light Mode");
+        notification("Disable light theme");
         document.getElementById("light_css").remove();
 
         // iframes
@@ -1856,7 +1734,7 @@ function light_mode(add_to) {
         light_mode_enabled=false;
     } else {
         // enable it
-        notification("Enabling Light Mode");
+        notification("Enable light theme");
         e = document.createElement("link");
         e.setAttribute("href", "light.css");
         e.setAttribute("rel", "stylesheet");
