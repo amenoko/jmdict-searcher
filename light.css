@@ -16,3 +16,8 @@ input.keywordbox_x {
 #notification {
    box-shadow: 0px 0px 15px 0px #00000060 !important;
 }
+
+#clear {
+   filter:invert(1);
+   background-color:black;
+}
